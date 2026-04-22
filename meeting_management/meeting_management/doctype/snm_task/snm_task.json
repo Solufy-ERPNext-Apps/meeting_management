@@ -74,10 +74,12 @@
   },
   {
    "allow_in_quick_entry": 1,
+   "default": "User",
    "fieldname": "allocated_by",
    "fieldtype": "Link",
    "label": "Allocated By",
-   "options": "User"
+   "options": "User",
+   "read_only": 1
   },
   {
    "fetch_from": "allocated_by.full_name",
@@ -218,7 +220,7 @@
  "is_tree": 1,
  "links": [],
  "max_attachments": 5,
- "modified": "2026-03-23 17:28:04.991511",
+ "modified": "2026-04-22 12:06:08.265632",
  "modified_by": "Administrator",
  "module": "Meeting Management",
  "name": "SNM Task",
@@ -246,6 +248,6 @@
  "sort_field": "creation",
  "sort_order": "DESC",
  "states": [],
- "title_field": "subject",
+ "title_field": "username",
  "track_seen": 1
 }
