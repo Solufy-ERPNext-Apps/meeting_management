@@ -12,7 +12,6 @@
   "type",
   "color",
   "is_group",
-  "is_template",
   "allocated_by",
   "username",
   "column_break0",
@@ -30,8 +29,7 @@
   "lft",
   "rgt",
   "old_parent",
-  "parent_snm_task",
-  "template_task"
+  "parent_snm_task"
  ],
  "fields": [
   {
@@ -64,16 +62,11 @@
    "label": "Color"
   },
   {
+   "allow_in_quick_entry": 1,
    "default": "0",
    "fieldname": "is_group",
    "fieldtype": "Check",
    "label": "Has Sub Task"
-  },
-  {
-   "default": "0",
-   "fieldname": "is_template",
-   "fieldtype": "Check",
-   "label": "Is Template"
   },
   {
    "allow_in_quick_entry": 1,
@@ -217,11 +210,6 @@
    "ignore_user_permissions": 1,
    "label": "Parent SNM Task",
    "options": "SNM Task"
-  },
-  {
-   "fieldname": "template_task",
-   "fieldtype": "Data",
-   "label": "Template Task"
   }
  ],
  "icon": "fa fa-check",
@@ -229,7 +217,7 @@
  "is_tree": 1,
  "links": [],
  "max_attachments": 5,
- "modified": "2026-04-24 17:16:29.675742",
+ "modified": "2026-04-27 16:42:08.789014",
  "modified_by": "Administrator",
  "module": "Meeting Management",
  "name": "SNM Task",

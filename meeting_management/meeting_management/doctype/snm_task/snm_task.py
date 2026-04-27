@@ -20,7 +20,6 @@ class SNMTask(Document):
 	def validate(self):
 		self.update_depends_on()
 		self.validate_parent_is_group()
-		self.validate_dependencies_for_template_task()
 	
 	def before_insert(self):
 		self.get_task_no()
@@ -30,15 +29,6 @@ class SNMTask(Document):
 		self.populate_depends_on()
 		self.unassign_todo()
 		self.update_subject()
-
-	def validate_parent_template_task(self):
-		if self.parent_task:
-			if not frappe.db.get_value("SNM Task", self.parent_task, "is_template"):
-				frappe.throw(
-					_("Parent Task {0} is not a Template Task").format(
-						get_link_to_form("SNM Task", self.parent_task)
-					)
-				)
 
 	def validate_parent_is_group(self):
 		if self.parent_task:
@@ -72,19 +62,8 @@ class SNMTask(Document):
 				depends_on_tasks += d.task + ","
 		self.depends_on_tasks = depends_on_tasks
 
-	def validate_depends_on_tasks(self):
-		if self.depends_on:
-			for task in self.depends_on:
-				if not frappe.db.get_value("SNM Task", task.task, "is_template"):
-					frappe.throw(
-						_("Dependent Task {0} is not a Template Task").format(
-							get_link_to_form("SNM Task", task.task)
-						)
-					)
-	def validate_dependencies_for_template_task(self):
-		if self.is_template:
-			self.validate_parent_template_task()
-			self.validate_depends_on_tasks()
+	
+	
 	def on_trash(self):
 		if check_if_child_exists(self.name):
 			throw(_("Child Task exists for this Task. You can not delete this Task."))
