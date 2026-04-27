@@ -30,12 +30,14 @@
   "lft",
   "rgt",
   "old_parent",
-  "parent_snm_task"
+  "parent_snm_task",
+  "template_task"
  ],
  "fields": [
   {
    "fieldname": "task_no",
    "fieldtype": "Data",
+   "in_list_view": 1,
    "label": "Task No.",
    "read_only": 1
   },
@@ -44,6 +46,7 @@
    "fieldname": "subject",
    "fieldtype": "Data",
    "in_global_search": 1,
+   "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Subject",
    "reqd": 1,
@@ -214,13 +217,19 @@
    "ignore_user_permissions": 1,
    "label": "Parent SNM Task",
    "options": "SNM Task"
+  },
+  {
+   "fieldname": "template_task",
+   "fieldtype": "Data",
+   "label": "Template Task"
   }
  ],
  "icon": "fa fa-check",
+ "is_calendar_and_gantt": 1,
  "is_tree": 1,
  "links": [],
  "max_attachments": 5,
- "modified": "2026-04-22 12:06:08.265632",
+ "modified": "2026-04-24 17:16:29.675742",
  "modified_by": "Administrator",
  "module": "Meeting Management",
  "name": "SNM Task",

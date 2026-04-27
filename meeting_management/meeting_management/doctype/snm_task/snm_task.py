@@ -6,6 +6,7 @@ import json
 from frappe.model.document import Document
 
 
+from typing import Optional, List, Dict, Any, Union
 
 from frappe import _, throw
 from frappe.desk.form.assign_to import clear, close_all_assignments
@@ -33,6 +34,15 @@ class SNMTask(Document):
 		self.populate_depends_on()
 		self.unassign_todo()
 		self.update_subject()
+
+	def validate_parent_template_task(self):
+		if self.parent_task:
+			if not frappe.db.get_value("SNM Task", self.parent_task, "is_template"):
+				frappe.throw(
+					_("Parent Task {0} is not a Template Task").format(
+						get_link_to_form("SNM Task", self.parent_task)
+					)
+				)
 
 	def validate_parent_is_group(self):
 		if self.parent_task:
