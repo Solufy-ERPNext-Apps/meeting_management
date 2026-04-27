@@ -4,10 +4,6 @@
 import frappe
 import json
 from frappe.model.document import Document
-
-
-from typing import Optional, List, Dict, Any, Union
-
 from frappe import _, throw
 from frappe.desk.form.assign_to import clear, close_all_assignments
 from frappe.model.mapper import get_mapped_doc
