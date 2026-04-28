@@ -18,6 +18,7 @@ class ParentIsGroupError(frappe.ValidationError):
 class SNMTask(Document):
 
 	def validate(self):
+		self.create_child_task()
 		self.update_depends_on()
 		self.validate_parent_is_group()
 	
@@ -41,7 +42,7 @@ class SNMTask(Document):
 				)
 
 	def populate_depends_on(self):
-		if self.parent_task:
+		if self.parent_task and not self.created_from_parent:
 			parent = frappe.get_doc("SNM Task", self.parent_task)
 			if self.name not in [row.task for row in parent.depends_on]:
 				parent.append(
@@ -62,8 +63,27 @@ class SNMTask(Document):
 				depends_on_tasks += d.task + ","
 		self.depends_on_tasks = depends_on_tasks
 
-	
-	
+	def create_child_task(self):
+		if self.is_group:
+			if self.depends_on:
+				for row in self.depends_on:
+					if not row.task:
+						child_task = frappe.get_doc(
+							{
+								"doctype": "SNM Task",
+								"subject": row.subject,
+								"parent_task": self.name,
+								"allocated_by":frappe.session.user,
+								"status":row.status,
+								"priority":row.priority,
+								"created_from_parent":1,
+								"start_date":row.start_date,
+								"due_date":row.due_date
+							}
+						)
+						child_task.insert()
+						row.task = child_task.name
+		
 	def on_trash(self):
 		if check_if_child_exists(self.name):
 			throw(_("Child Task exists for this Task. You can not delete this Task."))

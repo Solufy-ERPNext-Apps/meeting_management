@@ -10,6 +10,7 @@
   "task_no",
   "subject",
   "type",
+  "start_date",
   "color",
   "is_group",
   "allocated_by",
@@ -18,9 +19,11 @@
   "status",
   "priority",
   "task_weight",
+  "due_date",
   "parent_task",
   "completed_by",
   "completed_on",
+  "created_from_parent",
   "sb_details",
   "description",
   "sb_depends_on",
@@ -210,6 +213,23 @@
    "ignore_user_permissions": 1,
    "label": "Parent SNM Task",
    "options": "SNM Task"
+  },
+  {
+   "default": "0",
+   "fieldname": "created_from_parent",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Created from parent"
+  },
+  {
+   "fieldname": "start_date",
+   "fieldtype": "Date",
+   "label": "Start Date"
+  },
+  {
+   "fieldname": "due_date",
+   "fieldtype": "Date",
+   "label": "Due Date"
   }
  ],
  "icon": "fa fa-check",
@@ -217,7 +237,7 @@
  "is_tree": 1,
  "links": [],
  "max_attachments": 5,
- "modified": "2026-04-27 16:42:08.789014",
+ "modified": "2026-04-28 16:48:53.711679",
  "modified_by": "Administrator",
  "module": "Meeting Management",
  "name": "SNM Task",
