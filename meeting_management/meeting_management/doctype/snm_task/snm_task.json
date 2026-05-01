@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_import": 1,
- "autoname": "SNM-Task-.YYYY.-.####",
+ "autoname": "SNM-Task-ICT-.YYYY.-.####",
  "creation": "2026-03-23 17:28:04.991511",
  "doctype": "DocType",
  "document_type": "Setup",
@@ -18,7 +18,7 @@
   "column_break0",
   "status",
   "priority",
-  "task_weight",
+  "department",
   "due_date",
   "parent_task",
   "completed_by",
@@ -116,12 +116,6 @@
    "oldfieldtype": "Select",
    "options": "Low\nMedium\nHigh\nUrgent",
    "search_index": 1
-  },
-  {
-   "fetch_from": "type.weight",
-   "fieldname": "task_weight",
-   "fieldtype": "Float",
-   "label": "Weight"
   },
   {
    "allow_in_quick_entry": 1,
@@ -230,6 +224,12 @@
    "fieldname": "due_date",
    "fieldtype": "Date",
    "label": "Due Date"
+  },
+  {
+   "fieldname": "department",
+   "fieldtype": "Link",
+   "label": "Department",
+   "options": "Department"
   }
  ],
  "icon": "fa fa-check",
@@ -237,7 +237,7 @@
  "is_tree": 1,
  "links": [],
  "max_attachments": 5,
- "modified": "2026-04-28 16:48:53.711679",
+ "modified": "2026-05-01 16:31:04.307558",
  "modified_by": "Administrator",
  "module": "Meeting Management",
  "name": "SNM Task",
