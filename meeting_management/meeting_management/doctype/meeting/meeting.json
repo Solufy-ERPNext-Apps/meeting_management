@@ -21,6 +21,7 @@
   "meeting_arranged_by",
   "salutation",
   "contact_person",
+  "contact_p",
   "contact",
   "mobile_no",
   "email_id",
@@ -79,6 +80,7 @@
   {
    "fieldname": "party_type",
    "fieldtype": "Select",
+   "hidden": 1,
    "in_standard_filter": 1,
    "label": "Party Type",
    "options": "\nLead\nCustomer\nSupplier"
@@ -86,6 +88,7 @@
   {
    "fieldname": "party",
    "fieldtype": "Dynamic Link",
+   "hidden": 1,
    "label": "Party",
    "options": "party_type"
   },
@@ -144,25 +147,25 @@
   {
    "fieldname": "contact_person",
    "fieldtype": "Link",
-   "in_list_view": 1,
+   "hidden": 1,
    "label": "Contact Person",
    "options": "Contact"
   },
   {
-   "fetch_from": "contact_person.first_name",
+   "fetch_from": "contact_p.first_name",
    "fieldname": "contact",
    "fieldtype": "Data",
    "label": "Contact",
    "read_only": 1
   },
   {
-   "fetch_from": "contact_person.mobile_no",
+   "fetch_from": "contact_p.first_name",
    "fieldname": "mobile_no",
    "fieldtype": "Data",
    "label": "Mobile No"
   },
   {
-   "fetch_from": "contact_person.email_id",
+   "fetch_from": "contact_p.email_id",
    "fetch_if_empty": 1,
    "fieldname": "email_id",
    "fieldtype": "Data",
@@ -184,6 +187,7 @@
   {
    "fieldname": "company_details",
    "fieldtype": "Section Break",
+   "hidden": 1,
    "label": "Company Details"
   },
   {
@@ -284,6 +288,7 @@
   {
    "fieldname": "expenses",
    "fieldtype": "Section Break",
+   "hidden": 1,
    "label": "Expenses"
   },
   {
@@ -348,12 +353,18 @@
    "options": "Meeting",
    "print_hide": 1,
    "read_only": 1
+  },
+  {
+   "fieldname": "contact_p",
+   "fieldtype": "Link",
+   "label": "Contact Person",
+   "options": "Contact"
   }
  ],
  "icon": "fa fa-handshake-o",
  "is_submittable": 1,
  "links": [],
- "modified": "2023-03-17 05:16:57.196272",
+ "modified": "2026-05-01 11:57:37.789525",
  "modified_by": "Administrator",
  "module": "Meeting Management",
  "name": "Meeting",
@@ -400,6 +411,7 @@
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "search_fields": "organization,contact_person",
  "sort_field": "modified",
  "sort_order": "DESC",

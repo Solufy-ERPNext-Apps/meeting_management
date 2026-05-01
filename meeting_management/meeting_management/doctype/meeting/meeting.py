@@ -32,7 +32,7 @@ class Meeting(Document):
 		if self.party_type and self.party:
 			data = get_party_details(party_type=self.party_type,party=self.party)
 			if data:
-				self.contact_person = data.contact_person
+				self.contact_p = data.contact_person
 				self.email_id = data.contact_email
 				self.mobile_no = data.contact_mobile
 				self.contact = data.contact_dispaly
@@ -44,9 +44,9 @@ class Meeting(Document):
 		user_name = frappe.db.get_value("Employee",{"user_id":frappe.session.user},"employee_name")
 		url = get_url_to_form("Meeting", self.name)
 		if user_name:
-			discussed = "<strong><a href="+url+">"+self.name+"</a>: </strong>"+ user_name + " Met "+ str(self.contact_person) + " On "+ self.meeting_from +"<br>" + self.discussion.replace('\n', "<br>")
+			discussed = "<strong><a href="+url+">"+self.name+"</a>: </strong>"+ user_name + " Met "+ str(self.contact_p) + " On "+ self.meeting_from +"<br>" + self.discussion.replace('\n', "<br>")
 		else:
-			discussed = "<strong><a href="+url+">"+self.name+"</a>: </strong>"+ frappe.session.user + " Met "+ str(self.contact_person)+ " On "+ self.meeting_from +"<br>" + self.discussion.replace('\n', "<br>")
+			discussed = "<strong><a href="+url+">"+self.name+"</a>: </strong>"+ frappe.session.user + " Met "+ str(self.contact_p)+ " On "+ self.meeting_from +"<br>" + self.discussion.replace('\n', "<br>")
 
 		cm = frappe.new_doc("Comment")
 		cm.subject = self.name
@@ -67,7 +67,7 @@ class Meeting(Document):
 			if not target_lead.email_id:
 				target_lead.email_id = self.email_id
 			if not target_lead.lead_name:
-				target_lead.lead_name = self.contact_person
+				target_lead.lead_name = self.contact_p
 			if not target_lead.mobile_no:
 				target_lead.mobile_no = self.mobile_no
 			target_lead.save(ignore_permissions=True)
