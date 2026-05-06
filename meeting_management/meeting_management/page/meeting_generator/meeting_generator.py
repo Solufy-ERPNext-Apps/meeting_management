@@ -1,106 +1,41 @@
-# meeting_management/meeting_management/page/meeting_generator/meeting_generator.py
-
 import frappe
 from frappe.utils import get_url
 
+@frappe.whitelist()
+def get_simple_user_list():
+    """Returns users who have an active availability record."""
+    # Pluck the user field from User Appointment Availability records
+    available_users = frappe.get_all(
+        "User Appointment Availability",
+        filters={"enable_scheduling": 1},
+        pluck="user"
+    )
+
+    if not available_users:
+        return []
+
+    # Get the display details for these specific users
+    return frappe.get_all(
+        "User",
+        filters={"name": ["in", available_users]},
+        fields=["name", "full_name"]
+    )
 
 @frappe.whitelist()
-@frappe.validate_and_sanitize_search_inputs
-def get_available_users_query(doctype, txt, searchfield, start, page_len, filters):
+def get_user_scheduler_url(user):
+    """Generates the direct URL for a specific user's scheduler."""
+    avail = frappe.get_all(
+        "User Appointment Availability",
+        filters={"user": user, "enable_scheduling": 1},
+        fields=["name", "slug"]
+    )[0]
 
-	users = frappe.get_all(
-		"User Appointment Availability",
-		filters={"enable_scheduling": 1},
-		pluck="user"
-	)
+    # Get the first duration type to create a valid link
+    duration = frappe.get_all(
+        "Appointment Slot Duration",
+        filters={"parent": avail.name},
+        fields=["name"]
+    )[0]
 
-	users = list(set(users))
-
-	if not users:
-		return []
-
-	return frappe.db.sql("""
-		SELECT
-			name,
-			full_name
-		FROM `tabUser`
-		WHERE name IN %(users)s
-		AND (
-			name LIKE %(txt)s
-			OR full_name LIKE %(txt)s
-		)
-		LIMIT %(start)s, %(page_len)s
-	""", {
-		"users": tuple(users),
-		"txt": f"%{txt}%",
-		"start": start,
-		"page_len": page_len
-	})
-
-
-@frappe.whitelist()
-def get_user_slots(user):
-
-	user_availability = frappe.get_all(
-		"User Appointment Availability",
-		filters={
-			"user": user,
-			"enable_scheduling": 1
-		},
-		fields=["name"]
-	)
-
-	if not user_availability:
-		return []
-
-	durations = frappe.get_all(
-		"Appointment Slot Duration",
-		filters={
-			"parent": user_availability[0].name
-		},
-		fields=["name", "title", "duration"]
-	)
-
-	return durations
-
-
-@frappe.whitelist()
-def get_schedular_link(user):
-
-	user_availability = frappe.get_all(
-		"User Appointment Availability",
-		filters={
-			"user": user,
-			"enable_scheduling": 1
-		},
-		fields=["*"]
-	)
-
-	if not user_availability:
-		frappe.throw("No Appointment Availability Found")
-
-	user_availability = user_availability[0]
-
-	all_durations = frappe.get_all(
-		"Appointment Slot Duration",
-		filters={"parent": user_availability.get("name")},
-		fields=["name", "title", "duration"],
-	)
-
-	url = get_url(
-		"/schedule/in/{0}".format(user_availability.get("slug"))
-	)
-
-	return {
-		"url": url,
-		"slug": user_availability.get("slug"),
-		"available_durations": [
-			{
-				"id": duration.name,
-				"label": duration.title,
-				"duration": duration.duration,
-				"url": url + "?type=" + duration.name,
-			}
-			for duration in all_durations
-		],
-	}
+    base_url = get_url(f"/schedule/in/{avail.slug}")
+    return f"{base_url}?type={duration.name}"
