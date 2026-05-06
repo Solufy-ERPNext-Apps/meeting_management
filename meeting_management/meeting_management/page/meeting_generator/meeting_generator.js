@@ -7,67 +7,127 @@ frappe.pages['meeting-generator'].on_page_load = function(wrapper) {
         single_column: true
     });
 
-    // Clean table structure
     $(page.body).html(`
-        <div class="scheduler-page">
-            <div class="card-container">
-                <table class="table host-table">
-                    <thead>
-                        <tr>
-                            <th>Available User</th>
-                            <th class="text-right">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="host_list_body">
-                        <tr><td colspan="2" class="text-center">Finding hosts...</td></tr>
-                    </tbody>
-                </table>
-            </div>
+        <div class="employee-card">
+            <h3>Available Hosts</h3>
+            <table class="employee-table">
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">Sr. No</th>
+                        <th>User Name</th>
+                        <th>Email ID</th>
+                        <th style="text-align: center; width: 220px;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="meeting_user_body">
+                    <tr>
+                        <td colspan="4" class="text-center" style="padding: 30px; color: #6b7280;">
+                            Loading available hosts...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     `);
 
-    // Modern styling for the "just mention" look
+    // Styling with the requested green color and card layout
     $(page.body).append(`
         <style>
-            .scheduler-page { padding: 40px; background: #f9fafb; min-height: 100vh; }
-            .card-container { background: white; border-radius: 10px; border: 1px solid #eaebed; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-            .host-table thead { background: #f3f4f6; }
-            .host-table th { padding: 12px 20px; color: #4b5563; font-size: 11px; text-transform: uppercase; border: none; }
-            .host-table td { padding: 16px 20px; vertical-align: middle; border-top: 1px solid #f3f4f6; }
-            .host-name { font-weight: 600; color: #111827; font-size: 15px; }
-            .host-email { color: #6b7280; font-size: 13px; }
-            .btn-book { background: #2563eb; color: white; border: none; padding: 7px 16px; border-radius: 6px; font-weight: 500; cursor: pointer; }
-            .btn-book:hover { background: #1d4ed8; }
-            .text-right { text-align: right; }
+            .employee-card {
+                background: #ffffff;
+                padding: 30px;
+                border-radius: 12px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+                margin-top: 20px;
+            }
+            .employee-card h3 {
+                margin-bottom: 20px;
+                font-size: 18px;
+                font-weight: 700;
+                color: #1f2937;
+            }
+            .employee-table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            .employee-table th {
+                background: #f5f6fa;
+                padding: 12px;
+                text-align: left;
+                font-weight: 600;
+                color: #4b5563;
+                font-size: 13px;
+                text-transform: uppercase;
+            }
+            .employee-table td {
+                padding: 12px;
+                border-top: 1px solid #eee;
+                font-size: 14px;
+                color: #374151;
+                vertical-align: middle;
+            }
+            .employee-table tr:hover {
+                background: #f9f9f9;
+            }
+            .user-link {
+                color: #1f2937;
+                font-weight: 600;
+                text-decoration: none;
+                cursor: pointer;
+            }
+            .user-link:hover {
+                color: #28a745; /* Green hover */
+                text-decoration: underline;
+            }
+            .btn-schedule-green {
+                background-color: #28a745; /* Specific Green Color */
+                color: white !important;
+                border: none;
+                padding: 8px 16px;
+                border-radius: 6px;
+                font-size: 12px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: background 0.2s;
+            }
+            .btn-schedule-green:hover {
+                background-color: #218838;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
         </style>
     `);
 
-    // Function to handle the click
+    // Redirection function
     window.schedule_with_user = function(user_id) {
         frappe.call({
             method: "meeting_management.meeting_management.page.meeting_generator.meeting_generator.get_user_scheduler_url",
             args: { user: user_id },
             callback: function(r) {
-                if (r.message) window.open(r.message, "_blank");
+                if (r.message) {
+                    window.open(r.message, "_blank"); // Opens the specific user's link
+                }
             }
         });
     };
 
-    // Load the users directly
+    // Load users
     frappe.call({
         method: "meeting_management.meeting_management.page.meeting_generator.meeting_generator.get_simple_user_list",
         callback: function(r) {
             let html = "";
             if (r.message && r.message.length) {
-                r.message.forEach(u => {
+                r.message.forEach((user, index) => {
                     html += `
                         <tr>
+                            <td style="color: #6b7280;">${index + 1}</td>
                             <td>
-                                <div class="host-name">${u.full_name}</div>
-                                <div class="host-email">${u.name}</div>
+                                <a class="user-link" onclick="schedule_with_user('${user.name}')">
+                                    ${user.full_name || user.name}
+                                </a>
                             </td>
-                            <td class="text-right">
-                                <button class="btn-book" onclick="schedule_with_user('${u.name}')">
+                            <td style="color: #6b7280;">${user.name}</td>
+                            <td style="text-align: center;">
+                                <button class="btn-schedule-green" onclick="schedule_with_user('${user.name}')">
                                     Schedule Appointment
                                 </button>
                             </td>
@@ -75,9 +135,9 @@ frappe.pages['meeting-generator'].on_page_load = function(wrapper) {
                     `;
                 });
             } else {
-                html = `<tr><td colspan="2" class="text-center">No hosts available right now.</td></tr>`;
+                html = '<tr><td colspan="4" class="text-center">No available hosts found.</td></tr>';
             }
-            $("#host_list_body").html(html);
+            $("#meeting_user_body").html(html);
         }
     });
 };

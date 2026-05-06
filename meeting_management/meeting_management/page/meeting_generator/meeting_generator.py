@@ -4,7 +4,6 @@ from frappe.utils import get_url
 @frappe.whitelist()
 def get_simple_user_list():
     """Returns users who have an active availability record."""
-    # Pluck the user field from User Appointment Availability records
     available_users = frappe.get_all(
         "User Appointment Availability",
         filters={"enable_scheduling": 1},
@@ -14,7 +13,6 @@ def get_simple_user_list():
     if not available_users:
         return []
 
-    # Get the display details for these specific users
     return frappe.get_all(
         "User",
         filters={"name": ["in", available_users]},
@@ -24,18 +22,25 @@ def get_simple_user_list():
 @frappe.whitelist()
 def get_user_scheduler_url(user):
     """Generates the direct URL for a specific user's scheduler."""
-    avail = frappe.get_all(
+    avail_records = frappe.get_all(
         "User Appointment Availability",
         filters={"user": user, "enable_scheduling": 1},
         fields=["name", "slug"]
-    )[0]
+    )
 
-    # Get the first duration type to create a valid link
-    duration = frappe.get_all(
+    if not avail_records:
+        frappe.throw("No active availability found for this user.")
+
+    avail = avail_records[0]
+
+    durations = frappe.get_all(
         "Appointment Slot Duration",
         filters={"parent": avail.name},
         fields=["name"]
-    )[0]
+    )
+
+    if not durations:
+        frappe.throw("No slot durations defined for this user.")
 
     base_url = get_url(f"/schedule/in/{avail.slug}")
-    return f"{base_url}?type={duration.name}"
+    return f"{base_url}?type={durations[0].name}"
