@@ -37,7 +37,7 @@ after_migrate = "meeting_management.migrate.after_migrate"
 doctype_js = {
     "Lead":"public/js/lead.js",
     "Customer":"public/js/customer.js",
-    "Opportunity":"public/js/opportunity.js"
+    "Opportunity":"public/js/opportunity.js",
 }
 # doctype_js = {"doctype" : "public/js/doctype.js"}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}

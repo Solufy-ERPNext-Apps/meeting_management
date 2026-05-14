@@ -9,6 +9,7 @@
  "engine": "InnoDB",
  "field_order": [
   "naming_series",
+  "meeting_title",
   "lead",
   "party_type",
   "party",
@@ -39,6 +40,7 @@
   "get_user",
   "meeting_party_representative",
   "meeting_discussion",
+  "meet_link",
   "cc_to",
   "discussion",
   "actionable",
@@ -384,12 +386,23 @@
    "fieldtype": "Table",
    "label": "Tasks",
    "options": "Child Tasks"
+  },
+  {
+   "fieldname": "meeting_title",
+   "fieldtype": "Data",
+   "label": "Meeting Title"
+  },
+  {
+   "fieldname": "meet_link",
+   "fieldtype": "Data",
+   "label": "Meet Link",
+   "read_only": 1
   }
  ],
  "icon": "fa fa-handshake-o",
  "is_submittable": 1,
  "links": [],
- "modified": "2026-05-14 12:25:15.296390",
+ "modified": "2026-05-14 16:54:23.560841",
  "modified_by": "Administrator",
  "module": "Meeting Management",
  "name": "Meeting",
@@ -441,6 +454,5 @@
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],
- "title_field": "organization",
  "track_changes": 1
 }

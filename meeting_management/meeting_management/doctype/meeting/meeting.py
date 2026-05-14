@@ -234,3 +234,100 @@ def send_mail(self):
 	doc.user = frappe.session.user
 	doc.email_account = default_sender_name
 	doc.save(ignore_permissions=True)
+
+
+import frappe
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
+from google.auth.transport.requests import Request
+
+
+@frappe.whitelist()
+def create_google_meet(event_name):
+
+    # ERPNext Event
+    event = frappe.get_doc("Meeting", event_name)
+
+    # Google Settings
+    google_settings = frappe.get_single("Google Settings")
+
+    client_id = google_settings.client_id
+    client_secret = google_settings.get_password("client_secret")
+
+    # Fetch Authorized Google Calendar
+    google_calendar = frappe.get_doc(
+        "Google Calendar",
+        "riya.g.solufy@gmail.com"
+    )
+
+    if not google_calendar.refresh_token:
+        frappe.throw("Google Calendar is not authorized.")
+
+    # Create Credentials
+    creds = Credentials(
+        token=None,
+        refresh_token=google_calendar.refresh_token,
+        token_uri="https://oauth2.googleapis.com/token",
+        client_id=client_id,
+        client_secret=client_secret
+    )
+
+    # Refresh Access Token
+    creds.refresh(Request())
+
+    # Google Calendar Service
+    service = build(
+        "calendar",
+        "v3",
+        credentials=creds
+    )
+
+    # Event Payload
+    body = {
+        "summary": event.meeting_title,
+        "description": event.discussion or "",
+        "start": {
+            "dateTime": event.meeting_from.isoformat(),
+            "timeZone": "Asia/Kolkata"
+        },
+        "end": {
+            "dateTime": event.meeting_to.isoformat(),
+            "timeZone": "Asia/Kolkata"
+        },
+        "conferenceData": {
+            "createRequest": {
+                "requestId": frappe.generate_hash(length=10)
+            }
+        },
+        "attendees": []
+    }
+
+    # Add Participants
+    for participant in event.meeting_party_representative:
+
+        if participant.user:
+            body["attendees"].append({
+                "email": participant.user
+            })
+
+    # Create Event + Google Meet
+    created_event = service.events().insert(
+        calendarId="primary",
+        body=body,
+        conferenceDataVersion=1,
+        sendUpdates="all"
+    ).execute()
+
+    # Google Meet Link
+    meet_link = created_event.get("hangoutLink")
+
+    # Save in ERPNext
+    event.db_set(
+        "meet_link",
+        meet_link
+    )
+
+    return {
+        "meet_link": meet_link,
+        "google_event_id": created_event.get("id")
+    }

@@ -73,7 +73,32 @@ frappe.ui.form.on('Meeting', {
 		"background-color": "black",
 		"color": "#fff"
 	});
-}
+	}
+	if (!frm.is_new()) {
+
+				frm.add_custom_button("Create Google Meet", () => {
+
+					frappe.call({
+						method: "meeting_management.meeting_management.doctype.meeting.meeting.create_google_meet",
+						args: {
+							event_name: frm.doc.name
+						},
+						callback(r) {
+
+							if (r.message) {
+								console.log(r.message);
+								frappe.msgprint(`
+									<a href="${r.message.meet_link}" target="_blank">Meet
+								`);
+
+								frm.reload_doc();
+							}
+						}
+					});
+
+				});
+		}
+
 	},
 	meeting_from(frm) {
 		if (frm.doc.meeting_from && !frm.doc.meeting_to){
