@@ -13,6 +13,19 @@ app_license = "MIT"
 # Includes in <head>
 # -----------------
 # -
+fixtures=[
+     {
+    "doctype": "Notification",
+        "filters": [
+            [
+                "name", "in", [
+                    "Meeting"
+                ]
+            ]
+        ]
+
+}]
+
 after_migrate = "meeting_management.migrate.after_migrate"
 
 # include js, css files in header of desk.html
