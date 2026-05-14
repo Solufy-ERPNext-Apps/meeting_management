@@ -255,10 +255,8 @@ def create_google_meet(event_name):
     client_secret = google_settings.get_password("client_secret")
 
     # Fetch Authorized Google Calendar
-    google_calendar = frappe.get_doc(
-        "Google Calendar",
-        "riya.g.solufy@gmail.com"
-    )
+    google_calendar = frappe.get_last_doc(
+        "Google Calendar")
 
     if not google_calendar.refresh_token:
         frappe.throw("Google Calendar is not authorized.")
