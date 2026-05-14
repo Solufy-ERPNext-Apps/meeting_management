@@ -63,6 +63,17 @@ frappe.ui.form.on('Meeting', {
 				}
 			}
 		};
+		if (!frm.doc.__islocal) {
+	frm.add_custom_button(__("Create Task"), () => {
+		frm.call({
+			method: "create_task",
+			doc: frm.doc
+		});
+	}).css({
+		"background-color": "black",
+		"color": "#fff"
+	});
+}
 	},
 	meeting_from(frm) {
 		if (frm.doc.meeting_from && !frm.doc.meeting_to){
@@ -123,3 +134,4 @@ frappe.ui.form.on('Meeting', {
 	},
 	
 });
+

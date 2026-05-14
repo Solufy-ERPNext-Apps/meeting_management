@@ -11,7 +11,9 @@ app_email = "info@finbyz.tech"
 app_license = "MIT"
 
 # Includes in <head>
-# ------------------
+# -----------------
+# -
+after_migrate = "meeting_management.migrate.after_migrate"
 
 # include js, css files in header of desk.html
 # app_include_css = "/assets/meeting_management/css/meeting_management.css"

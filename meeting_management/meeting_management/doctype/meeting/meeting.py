@@ -71,6 +71,37 @@ class Meeting(Document):
 			if not target_lead.mobile_no:
 				target_lead.mobile_no = self.mobile_no
 			target_lead.save(ignore_permissions=True)
+			
+	@frappe.whitelist()
+	def get_user(self):
+		if self.user_type:
+			users = frappe.get_list("User", filters={"custom_user_type": self.user_type,"enabled":1}, pluck="name")
+			if not users: return frappe.throw(_("No users found with user type {0}").format(self.user_type))
+
+			for row in users:
+				self.append("meeting_party_representative",{
+					"user": row
+				})
+	
+	@frappe.whitelist()
+	def create_task(self):
+		if not self.tasks:
+			return
+		for row in self.tasks:
+			if not row.task:
+				task = frappe.new_doc("SNM Task")
+				task.subject = row.subject
+				task.allocated_by = row.user if row.user else frappe.session.user
+				task.priority = row.priority
+				task.status = row.status
+				task.start_date = row.start_date
+				task.due_date = row.due_date
+				task.meeting = self.name
+				task.department = frappe.db.get_value("Employee",{"user_id":row.user},"department")
+				task.save(ignore_permissions=True)
+
+				row.task = task.name
+		self.save()
 
 @frappe.whitelist()
 def get_events(start, end, filters=None):

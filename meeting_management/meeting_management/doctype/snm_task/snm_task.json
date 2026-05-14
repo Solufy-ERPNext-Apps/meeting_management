@@ -1,8 +1,9 @@
 {
  "actions": [],
  "allow_import": 1,
- "autoname": "SNM-Task-ICT-.YYYY.-.####",
+ "autoname": "SNM-Task-.department.-.YYYY.-.#####",
  "creation": "2026-03-23 17:28:04.991511",
+ "default_view": "Kanban",
  "doctype": "DocType",
  "document_type": "Setup",
  "engine": "InnoDB",
@@ -29,6 +30,7 @@
   "sb_depends_on",
   "depends_on",
   "depends_on_tasks",
+  "meeting",
   "lft",
   "rgt",
   "old_parent",
@@ -73,12 +75,10 @@
   },
   {
    "allow_in_quick_entry": 1,
-   "default": "User",
    "fieldname": "allocated_by",
    "fieldtype": "Link",
    "label": "Allocated By",
-   "options": "User",
-   "read_only": 1
+   "options": "User"
   },
   {
    "fetch_from": "allocated_by.full_name",
@@ -230,14 +230,21 @@
    "fieldtype": "Link",
    "label": "Department",
    "options": "Department"
+  },
+  {
+   "fieldname": "meeting",
+   "fieldtype": "Link",
+   "label": "Meeting Reference",
+   "options": "Meeting"
   }
  ],
+ "force_re_route_to_default_view": 1,
  "icon": "fa fa-check",
  "is_calendar_and_gantt": 1,
  "is_tree": 1,
  "links": [],
  "max_attachments": 5,
- "modified": "2026-05-06 11:36:17.277281",
+ "modified": "2026-05-14 12:27:15.812531",
  "modified_by": "Administrator",
  "module": "Meeting Management",
  "name": "SNM Task",

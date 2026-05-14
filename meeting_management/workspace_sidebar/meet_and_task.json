@@ -53,6 +53,17 @@
   {
    "child": 0,
    "collapsible": 1,
+   "indent": 0,
+   "keep_closed": 0,
+   "label": "Schedule Appointment",
+   "link_to": "meeting-generator",
+   "link_type": "Page",
+   "show_arrow": 0,
+   "type": "Link"
+  },
+  {
+   "child": 0,
+   "collapsible": 1,
    "display_depends_on": "eval: !frappe.user.has_role(\"System Manager\") && !frappe.user.has_role(\"Admin\") && !frappe.user.has_role(\"BC Policy Management\") && !frappe.user.has_role(\"bc policy user\") && !frappe.user.has_role(\"BCM\") && !frappe.user.has_role(\"Central Adhikari\") && !frappe.user.has_role(\"Dashboard Manager\") && !frappe.user.has_role(\"HQ/Secretary\") && !frappe.user.has_role(\"Insights Admin\") && !frappe.user.has_role(\"Insights User\") && !frappe.user.has_role(\"Khetriya Sanchalak\") && !frappe.user.has_role(\"Marketing Manager\") && !frappe.user.has_role(\"meeting user\") && !frappe.user.has_role(\"Member Incharge\") && !frappe.user.has_role(\"Member Incharge (Land)\") && !frappe.user.has_role(\"Member Incharge (BM)\") && !frappe.user.has_role(\"Member Incharge A&F User\") && !frappe.user.has_role(\"member incharge accounts and finance user\") && !frappe.user.has_role(\"Member Incharge BM User\") && !frappe.user.has_role(\"Member Incharge LC User\") && !frappe.user.has_role(\"Member Incharge P&M User\") && !frappe.user.has_role(\"member incharge paint and maintenance user\") && !frappe.user.has_role(\"Member Incharge PP User\") && !frappe.user.has_role(\"Member Incharge(A & F)\") && !frappe.user.has_role(\"Member Incharge(P & M)\") && !frappe.user.has_role(\"Member Incharge(PP)\") && !frappe.user.has_role(\"Mukhi\") && !frappe.user.has_role(\"PP\") && !frappe.user.has_role(\"Projects User\") && !frappe.user.has_role(\"Sanchalak\") && !frappe.user.has_role(\"Script Manager\") && !frappe.user.has_role(\"Secretary HQ\") && !frappe.user.has_role(\"Stock Manager\") && !frappe.user.has_role(\"Stock User\") && !frappe.user.has_role(\"Unit Adhikari\") && !frappe.user.has_role(\"Website Manager\") && !frappe.user.has_role(\"Workspace Manager\") && !frappe.user.has_role(\"Zonal Incharge\")",
    "indent": 0,
    "keep_closed": 1,
@@ -73,7 +84,7 @@
    "type": "Link"
   }
  ],
- "modified": "2026-05-01 12:09:56.529710",
+ "modified": "2026-05-06 14:37:58.847244",
  "modified_by": "Administrator",
  "module": "Building Construction Manufacturing Service",
  "name": "Meet and Task",

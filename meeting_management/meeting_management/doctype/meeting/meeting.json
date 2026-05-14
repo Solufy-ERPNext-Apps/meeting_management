@@ -35,12 +35,15 @@
   "business_specifics",
   "participants",
   "meeting_company_representative",
+  "user_type",
+  "get_user",
   "meeting_party_representative",
   "meeting_discussion",
   "cc_to",
   "discussion",
   "actionable",
   "actionables",
+  "tasks",
   "sec_brk1",
   "contact_by",
   "send_mail",
@@ -101,6 +104,7 @@
   {
    "fieldname": "organization",
    "fieldtype": "Data",
+   "hidden": 1,
    "in_standard_filter": 1,
    "label": "Organization",
    "read_only": 1
@@ -130,12 +134,14 @@
    "label": "Posting Date"
   },
   {
+   "default": "User",
    "fieldname": "meeting_arranged_by",
    "fieldtype": "Link",
    "ignore_user_permissions": 1,
    "in_standard_filter": 1,
    "label": "Meeting Arranged By",
-   "options": "User"
+   "options": "User",
+   "read_only": 1
   },
   {
    "fieldname": "salutation",
@@ -208,8 +214,7 @@
    "fieldname": "industry",
    "fieldtype": "Link",
    "label": "Industry",
-   "options": "Industry Type",
-   "reqd": 1
+   "options": "Industry Type"
   },
   {
    "fieldname": "business_specifics",
@@ -224,6 +229,7 @@
   {
    "fieldname": "meeting_company_representative",
    "fieldtype": "Table",
+   "hidden": 1,
    "label": "Meeting Company Representative",
    "options": "Meeting Company Representative"
   },
@@ -258,6 +264,7 @@
   {
    "fieldname": "actionables",
    "fieldtype": "Table",
+   "hidden": 1,
    "label": "Actionables",
    "options": "Meeting Actionable"
   },
@@ -359,12 +366,30 @@
    "fieldtype": "Link",
    "label": "Contact Person",
    "options": "Contact"
+  },
+  {
+   "fieldname": "user_type",
+   "fieldtype": "Select",
+   "label": "User Type",
+   "options": "\nAdmin\nManager\nStaff\nGuest"
+  },
+  {
+   "fieldname": "get_user",
+   "fieldtype": "Button",
+   "label": "Get User",
+   "options": "get_user"
+  },
+  {
+   "fieldname": "tasks",
+   "fieldtype": "Table",
+   "label": "Tasks",
+   "options": "Child Tasks"
   }
  ],
  "icon": "fa fa-handshake-o",
  "is_submittable": 1,
  "links": [],
- "modified": "2026-05-01 11:57:37.789525",
+ "modified": "2026-05-14 12:25:15.296390",
  "modified_by": "Administrator",
  "module": "Meeting Management",
  "name": "Meeting",

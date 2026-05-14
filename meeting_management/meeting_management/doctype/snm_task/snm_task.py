@@ -271,6 +271,7 @@ class SNMTask(Document):
 		self.update_depends_on()
 		self.validate_parent_is_group()
 		self.validate_due_date()
+		self.get_dept()
 
 	def before_insert(self):
 		self.get_task_no()
@@ -460,7 +461,17 @@ class SNMTask(Document):
 
 		self.subject = f"{self.task_no} - {subject}"
 
-
+	@frappe.whitelist()
+	def get_dept(self):
+		if self.allocated_by:
+			user = self.allocated_by
+		else:
+			user = frappe.session.user
+		dept = frappe.db.get_value("Employee", {"user_id": user}, "department")
+		if not dept:
+			return frappe.throw(_("No department found for user {0}").format(user))
+		self.department = dept
+		
 @frappe.whitelist()
 def get_task_assignees(task):
 

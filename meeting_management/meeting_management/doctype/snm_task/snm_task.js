@@ -34,6 +34,7 @@ frappe.ui.form.on("SNM Task",{
                 "padding": "6px 14px"
             });
         }
+        get_dept(frm)
         },
     parent_task(frm){
         frm.call({
@@ -41,5 +42,15 @@ frappe.ui.form.on("SNM Task",{
             doc:frm.doc
         })
 
+    },
+    allocated_by(frm){
+        get_dept(frm)
     }
 })
+
+function get_dept(frm){
+    frm.call({
+        method:"get_dept",
+        doc:frm.doc
+    })
+}
