@@ -112,6 +112,8 @@ class Meeting(Document):
 		event.starts_on = self.meeting_from
 		event.ends_on = self.meeting_to
 		event.save(ignore_permissions=True)
+		# event.custom_contact_person=self.contact_p
+		event.description=self.discussion
 		return event.name
 
 @frappe.whitelist()
