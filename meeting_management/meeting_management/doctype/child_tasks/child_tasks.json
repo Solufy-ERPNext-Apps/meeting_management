@@ -13,7 +13,8 @@
   "priority",
   "user",
   "start_date",
-  "due_date"
+  "due_date",
+  "parent_task"
  ],
  "fields": [
   {
@@ -75,13 +76,20 @@
    "in_list_view": 1,
    "label": "Due Date",
    "read_only_depends_on": "eval:doc.task"
+  },
+  {
+   "fieldname": "parent_task",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Parent Task",
+   "options": "SNM Task"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-04-29 09:33:43.666417",
+ "modified": "2026-05-19 13:08:19.474301",
  "modified_by": "Administrator",
  "module": "Meeting Management",
  "name": "Child Tasks",

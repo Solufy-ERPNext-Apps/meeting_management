@@ -65,10 +65,10 @@ frappe.ui.form.on('Meeting', {
 		};
 		if (!frm.doc.__islocal) {
 	frm.add_custom_button(__("Create Task"), () => {
-		frm.call({
-			method: "create_task",
-			doc: frm.doc
-		});
+
+	frappe.new_doc("SNM Task", {
+		meeting: frm.doc.name
+	});
 	}).css({
 		"background-color": "black",
 		"color": "#fff"

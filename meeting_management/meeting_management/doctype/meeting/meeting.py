@@ -29,6 +29,7 @@ from frappe.utils import get_datetime
 class Meeting(Document):
 	
 	def validate(self):
+		self.create_task()
 		if self.party_type and self.party:
 			data = get_party_details(party_type=self.party_type,party=self.party)
 			if data:
@@ -41,6 +42,7 @@ class Meeting(Document):
 				self.organization = data.organisation
 
 	def on_submit(self):
+		self.create_event()
 		user_name = frappe.db.get_value("Employee",{"user_id":frappe.session.user},"employee_name")
 		url = get_url_to_form("Meeting", self.name)
 		if user_name:
@@ -101,7 +103,16 @@ class Meeting(Document):
 				task.save(ignore_permissions=True)
 
 				row.task = task.name
-		self.save()
+		# self.save()
+
+	def create_event(self):
+		event = frappe.new_doc("Event")
+		event.subject = self.name
+		event.event_type = "Private"
+		event.starts_on = self.meeting_from
+		event.ends_on = self.meeting_to
+		event.save(ignore_permissions=True)
+		return event.name
 
 @frappe.whitelist()
 def get_events(start, end, filters=None):
