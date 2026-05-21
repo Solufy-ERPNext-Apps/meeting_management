@@ -321,7 +321,6 @@ def create_google_meet(event_name):
                 "email": participant.user
             })
 
-    # Create Event + Google Meet
     created_event = service.events().insert(
         calendarId="primary",
         body=body,
@@ -329,10 +328,8 @@ def create_google_meet(event_name):
         sendUpdates="all"
     ).execute()
 
-    # Google Meet Link
     meet_link = created_event.get("hangoutLink")
 
-    # Save in ERPNext
     event.db_set(
         "meet_link",
         meet_link
@@ -342,3 +339,40 @@ def create_google_meet(event_name):
         "meet_link": meet_link,
         "google_event_id": created_event.get("id")
     }
+
+
+@frappe.whitelist()
+def create_follow_up_meeting(
+	parent_meeting,
+	subject,
+	description=None,
+	follow_up_date=None,
+	contact_person=None,
+	follow_end_date=None
+):
+
+	# Fetch Parent Meeting
+	parent_doc = frappe.get_doc("Meeting", parent_meeting)
+
+	# Create New Follow Up Meeting
+	m = frappe.new_doc("Meeting")
+
+	m.meeting_title = subject
+	m.discussion = description
+	m.meeting_from = follow_up_date
+	m.meeting_to = follow_end_date
+	m.parent_meeting = parent_meeting
+	m.contact_person = contact_person
+
+	# Copy values from parent meeting
+	m.meeting_arranged_by = parent_doc.meeting_arranged_by
+	m.contact_p = parent_doc.contact_p
+	m.meeting_type = parent_doc.meeting_type
+	m.user_type = parent_doc.user_type
+	m.meeting_party_representative = parent_doc.meeting_party_representative
+
+	m.insert(ignore_permissions=True)
+
+	frappe.db.commit()
+
+	return m.name

@@ -22,6 +22,7 @@ frappe.ui.form.on("Meeting", "lodging_cost", function(frm) {
 });
 
 frappe.ui.form.on('Meeting', {
+
 	send_mail: function(frm){
 		if (frm.is_dirty()){
 			frappe.throw("Please Save the Current Document and Then Proceed again")
@@ -34,6 +35,9 @@ frappe.ui.form.on('Meeting', {
 				},
 			})
 		}
+	},
+	onload: function(frm) {
+		disable_add_and_delete_row(frm);
 	},
 	refresh: function(frm) {
 		frm.fields_dict.contact_person.get_query = function(doc) {
@@ -63,7 +67,7 @@ frappe.ui.form.on('Meeting', {
 				}
 			}
 		};
-		if (!frm.doc.__islocal) {
+		if (!frm.doc.__islocal && frm.doc.docstatus === 1) {
 	frm.add_custom_button(__("Create Task"), () => {
 
 	frappe.new_doc("SNM Task", {
@@ -74,8 +78,75 @@ frappe.ui.form.on('Meeting', {
 		"color": "#fff"
 	});
 	}
-	if (!frm.is_new()) {
+	if (!frm.is_new() && frm.doc.docstatus === 1) {
+		frm.add_custom_button("Follow Up", () => {
 
+	let d = new frappe.ui.Dialog({
+		title: "Create Follow Up",
+		fields: [
+			{
+				fieldname: "subject",
+				label: "Subject",
+				fieldtype: "Data",
+				reqd: 1,
+				default:frm.doc.meeting_title
+			},
+			{
+				fieldname: "follow_up_date",
+				label: "Start Date",
+				fieldtype: "Datetime",
+				reqd: 1
+			},
+			{
+				fieldname: "follow_end_date",
+				label: "End Date",
+				fieldtype: "Datetime",
+				reqd: 1
+			},
+			{
+				fieldname: "description",
+				label: "Description",
+				fieldtype: "Small Text",
+				default: frm.doc.discussion
+			},
+		],
+
+		primary_action_label: "Create",
+
+		primary_action(values) {
+
+			frappe.call({
+				method: "meeting_management.meeting_management.doctype.meeting.meeting.create_follow_up_meeting",
+				args: {
+					parent_meeting: frm.doc.name,
+					subject: values.subject,
+					description: values.description,
+					follow_up_date: values.follow_up_date,
+					follow_end_date:values.follow_end_date,
+					contact_person: frm.doc.contact_person
+				},
+				callback: function(r) {
+
+					if (r.message) {
+
+						frappe.msgprint(__("Follow Up Meeting Created"));
+
+						frappe.set_route("Form", "Meeting", r.message);
+					}
+				}
+			});
+
+			d.hide();
+		}
+	});
+
+	d.show();
+
+}).css({
+	"background-color": "black",
+	"color": "#fff"
+});
+			if(!frm.doc.meet_link && frm.doc.docstatus === 1){
 				frm.add_custom_button("Create Google Meet", () => {
 
 					frappe.call({
@@ -88,15 +159,17 @@ frappe.ui.form.on('Meeting', {
 							if (r.message) {
 								console.log(r.message);
 								frappe.msgprint(`
-									<a href="${r.message.meet_link}" target="_blank">Meet
-								`);
-
+								<a href="${r.message.meet_link}" target="_blank">
+									${r.message.meet_link}
+								</a>
+							`);
 								frm.reload_doc();
 							}
 						}
 					});
 
 				});
+			}
 		}
 
 	},
@@ -160,3 +233,28 @@ frappe.ui.form.on('Meeting', {
 	
 });
 
+
+
+function disable_add_and_delete_row(frm) {
+  // Disable add/delete in recurring_meeting child table
+  frm.set_df_property("recurring_meeting", "cannot_add_rows", true);
+  frm.set_df_property("recurring_meeting", "cannot_delete_rows", true);
+  frm.fields_dict["recurring_meeting"].grid.add_new_row = () => {};
+  if (!frm.doc.recurring_meeting || frm.doc.recurring_meeting.length === 0) {
+    const days = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday"
+    ];
+
+    days.forEach((day) => {
+      let row = frm.add_child("recurring_meeting");
+      row.day = day;
+    });
+    frm.refresh_field("recurring_meeting");
+  }
+}

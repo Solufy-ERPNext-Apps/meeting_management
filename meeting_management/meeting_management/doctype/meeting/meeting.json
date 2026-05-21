@@ -40,6 +40,8 @@
   "user_type",
   "get_user",
   "meeting_party_representative",
+  "section_break_zjkc",
+  "recurring_meeting",
   "meeting_discussion",
   "meet_link",
   "cc_to",
@@ -411,12 +413,22 @@
    "fieldtype": "Select",
    "label": "Meeting Type",
    "options": "\nInternal\nExternal"
+  },
+  {
+   "fieldname": "section_break_zjkc",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "recurring_meeting",
+   "fieldtype": "Table",
+   "label": "Recurring Meeting",
+   "options": "Recurring Meeting"
   }
  ],
  "icon": "fa fa-handshake-o",
  "is_submittable": 1,
  "links": [],
- "modified": "2026-05-19 13:04:05.409453",
+ "modified": "2026-05-21 11:20:39.527854",
  "modified_by": "Administrator",
  "module": "Meeting Management",
  "name": "Meeting",
