@@ -25,7 +25,7 @@ import smtplib
 from datetime import datetime
 import datetime
 from frappe.utils import get_datetime
-
+from datetime import timedelta
 class Meeting(Document):
 	
 	def validate(self):
@@ -41,7 +41,7 @@ class Meeting(Document):
 				self.address_display = data.address_display
 				self.organization = data.organisation
 
-	def on_submit(self):
+	def on_submit(self):	
 		self.create_event()
 		user_name = frappe.db.get_value("Employee",{"user_id":frappe.session.user},"employee_name")
 		url = get_url_to_form("Meeting", self.name)
@@ -104,17 +104,96 @@ class Meeting(Document):
 
 				row.task = task.name
 		# self.save()
+	
+
 
 	def create_event(self):
-		event = frappe.new_doc("Event")
-		event.subject = self.name
-		event.event_type = "Private"
-		event.starts_on = self.meeting_from
-		event.ends_on = self.meeting_to
-		event.save(ignore_permissions=True)
-		# event.custom_contact_person=self.contact_p
-		event.description=self.discussion
-		return event.name
+
+		# Create Main Event
+		main_event = frappe.new_doc("Event")
+		main_event.subject = self.name
+		main_event.event_type = "Private"
+		main_event.starts_on = self.meeting_from
+		main_event.ends_on = self.meeting_to
+		main_event.description = self.discussion
+		main_event.save(ignore_permissions=True)
+
+		# -----------------------------
+		# Recurring Events
+		# -----------------------------
+
+		weekdays = {
+			"Monday": 0,
+			"Tuesday": 1,
+			"Wednesday": 2,
+			"Thursday": 3,
+			"Friday": 4,
+			"Saturday": 5,
+			"Sunday": 6,
+		}
+
+		start_datetime = get_datetime(self.meeting_from)
+		end_datetime = get_datetime(self.meeting_to)
+
+		start_date = start_datetime.date()
+
+		for row in self.recurring_meeting:
+
+			# Skip unchecked rows
+			if not row.check:
+				continue
+
+			if not row.day or not row.end_date:
+				continue
+
+			target_weekday = weekdays.get(row.day)
+
+			current_date = start_date
+			end_date = getdate(row.end_date)
+
+			while current_date <= end_date:
+
+				# Match weekday
+				if current_date.weekday() == target_weekday:
+
+					# Skip main meeting date
+					if current_date != start_date:
+
+						recurring_event = frappe.new_doc("Event")
+
+						recurring_event.subject = f"{self.name}"
+						recurring_event.event_type = "Private"
+
+						# Keep same time
+						recurring_event.starts_on = start_datetime.replace(
+							year=current_date.year,
+							month=current_date.month,
+							day=current_date.day
+						)
+
+						recurring_event.ends_on = end_datetime.replace(
+							year=current_date.year,
+							month=current_date.month,
+							day=current_date.day
+						)
+
+						recurring_event.description = self.discussion
+
+						recurring_event.save(ignore_permissions=True)
+
+				current_date += timedelta(days=1)
+
+		return main_event.name
+	# def create_event(self):
+	# 	event = frappe.new_doc("Event")
+	# 	event.subject = self.name
+	# 	event.event_type = "Private"
+	# 	event.starts_on = self.meeting_from
+	# 	event.ends_on = self.meeting_to
+	# 	event.save(ignore_permissions=True)
+	# 	# event.custom_contact_person=self.contact_p
+	# 	event.description=self.discussion
+	# 	return event.name
 
 @frappe.whitelist()
 def get_events(start, end, filters=None):
