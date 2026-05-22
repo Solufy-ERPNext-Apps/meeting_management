@@ -27,9 +27,10 @@ import datetime
 from frappe.utils import get_datetime
 from datetime import timedelta
 class Meeting(Document):
-	
-	def validate(self):
+	def before_update_after_submit(self):
+		# frappe.throw("::::::::::::::")
 		self.create_task()
+	def validate(self):
 		if self.party_type and self.party:
 			data = get_party_details(party_type=self.party_type,party=self.party)
 			if data:
@@ -363,7 +364,7 @@ def create_google_meet(event_name):
     )
 
     # Refresh Access Token
-    creds.refresh(Request())
+    # creds.refresh(Request())
 
     # Google Calendar Service
     service = build(

@@ -24,7 +24,19 @@ fixtures=[
             ]
         ]
 
-}]
+},
+{
+    "doctype": "Server Script",
+        "filters": [
+            [
+                "name", "in", [
+                    "SNM Task"
+                ]
+            ]
+        ]
+
+}
+]
 
 after_migrate = "meeting_management.migrate.after_migrate"
 
