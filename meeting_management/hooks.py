@@ -195,6 +195,3 @@ override_doctype_dashboards = {
 # auth_hooks = [
 #	"meeting_management.auth.validate"
 # ]
-from erpnext.selling.doctype.customer import customer_dashboard
-from meeting_management.api import customer_get_data
-customer_dashboard.get_data = customer_get_data
