@@ -27,10 +27,41 @@ import datetime
 from frappe.utils import get_datetime
 from datetime import timedelta
 class Meeting(Document):
+	def get_recurrence_rrule(self):
+		checked_rows = [row for row in self.recurring_meeting if row.check]
+		if not checked_rows:
+			return None
+
+		day_map = {
+			"Monday": "MO",
+			"Tuesday": "TU",
+			"Wednesday": "WE",
+			"Thursday": "TH",
+			"Friday": "FR",
+			"Saturday": "SA",
+			"Sunday": "SU",
+		}
+
+		byday = [day_map[row.day] for row in checked_rows if row.day in day_map]
+		# Ensure sorted/consistent order to prevent duplicate/inconsistent RRULES
+		byday = sorted(list(set(byday)), key=lambda d: ["SU", "MO", "TU", "WE", "TH", "FR", "SA"].index(d))
+
+		end_dates = [getdate(row.end_date) for row in checked_rows if row.end_date]
+		if not end_dates:
+			return None
+		latest_end_date = max(end_dates)
+
+		# Format UNTIL in UTC format: YYYYMMDDTHHMMSSZ
+		until_str = latest_end_date.strftime("%Y%m%d") + "T235959Z"
+
+		return f"RRULE:FREQ=WEEKLY;BYDAY={','.join(byday)};UNTIL={until_str}"
+
 	def before_update_after_submit(self):
 		# frappe.throw("::::::::::::::")
 		self.create_task()
 	def validate(self):
+		if self.meeting_to and self.meeting_to<self.meeting_from:
+			frappe.throw(_("Meeting To cannot be less than Meeting From"))
 		if self.party_type and self.party:
 			data = get_party_details(party_type=self.party_type,party=self.party)
 			if data:
@@ -335,91 +366,306 @@ from googleapiclient.discovery import build
 from google.auth.transport.requests import Request
 
 
+# @frappe.whitelist()
+# def create_google_meet(event_name):
+
+#     # ERPNext Event
+#     event = frappe.get_doc("Meeting", event_name)
+
+#     # Google Settings
+#     google_settings = frappe.get_single("Google Settings")
+
+#     client_id = google_settings.client_id
+#     client_secret = google_settings.get_password("client_secret")
+
+#     # Fetch Authorized Google Calendar
+#     google_calendar = frappe.get_last_doc(
+#         "Google Calendar")
+
+#     if not google_calendar.refresh_token:
+#         frappe.throw("Google Calendar is not authorized.")
+
+#     # Create Credentials
+#     creds = Credentials(
+#         token=None,
+#         refresh_token=google_calendar.refresh_token,
+#         token_uri="https://oauth2.googleapis.com/token",
+#         client_id=client_id,
+#         client_secret=client_secret
+#     )
+
+#     # Refresh Access Token
+#     # creds.refresh(Request())
+
+#     # Google Calendar Service
+#     service = build(
+#         "calendar",
+#         "v3",
+#         credentials=creds
+#     )
+
+#     # Event Payload
+#     body = {
+#         "summary": event.meeting_title,
+#         "description": event.discussion or "",
+#         "start": {
+#             "dateTime": event.meeting_from.isoformat(),
+#             "timeZone": "Asia/Kolkata"
+#         },
+#         "end": {
+#             "dateTime": event.meeting_to.isoformat(),
+#             "timeZone": "Asia/Kolkata"
+#         },
+#         "conferenceData": {
+#             "createRequest": {
+#                 "requestId": frappe.generate_hash(length=10)
+#             }
+#         },
+#         "attendees": []
+#     }
+
+#     # Add Participants
+#     for participant in event.meeting_party_representative:
+
+#         if participant.user:
+#             body["attendees"].append({
+#                 "email": participant.user
+#             })
+
+#     created_event = service.events().insert(
+#         calendarId="primary",
+#         body=body,
+#         conferenceDataVersion=1,
+#         sendUpdates="all"
+#     ).execute()
+
+#     meet_link = created_event.get("hangoutLink")
+
+#     event.db_set(
+#         "meet_link",
+#         meet_link
+#     )
+
+#     return {
+#         "meet_link": meet_link,
+#         "google_event_id": created_event.get("id")
+#     }
+
 @frappe.whitelist()
 def create_google_meet(event_name):
 
-    # ERPNext Event
-    event = frappe.get_doc("Meeting", event_name)
+	# ERPNext Event
+	event = frappe.get_doc("Meeting", event_name)
 
-    # Google Settings
-    google_settings = frappe.get_single("Google Settings")
+	# Fetch Authorized Google Calendar
+	google_calendar = frappe.get_last_doc("Google Calendar")
 
-    client_id = google_settings.client_id
-    client_secret = google_settings.get_password("client_secret")
+	if not google_calendar or not google_calendar.name:
+		frappe.throw("Google Calendar is not authorized.")
 
-    # Fetch Authorized Google Calendar
-    google_calendar = frappe.get_last_doc(
-        "Google Calendar")
+	from frappe.integrations.doctype.google_calendar.google_calendar import get_google_calendar_object
+	service, google_calendar_doc = get_google_calendar_object(google_calendar.name)
 
-    if not google_calendar.refresh_token:
-        frappe.throw("Google Calendar is not authorized.")
+	# Add Participants
+	attendees = []
+	for participant in event.meeting_party_representative:
+		email = participant.email_id or participant.user
+		if email:
+			attendees.append({
+				"email": email
+			})
 
-    # Create Credentials
-    creds = Credentials(
-        token=None,
-        refresh_token=google_calendar.refresh_token,
-        token_uri="https://oauth2.googleapis.com/token",
-        client_id=client_id,
-        client_secret=client_secret
-    )
+	# Fetch all Frappe Event records linked to this meeting (both main and recurring)
+	frappe_events = frappe.get_all(
+		"Event",
+		filters={"subject": event_name},
+		fields=["name", "starts_on", "ends_on", "google_calendar_event_id"],
+		order_by="starts_on asc"
+	)
 
-    # Refresh Access Token
-    # creds.refresh(Request())
+	calendar_id = google_calendar_doc.google_calendar_id or "primary"
+	rrule = event.get_recurrence_rrule()
 
-    # Google Calendar Service
-    service = build(
-        "calendar",
-        "v3",
-        credentials=creds
-    )
+	import pytz
+	from frappe.utils.data import get_system_timezone
 
-    # Event Payload
-    body = {
-        "summary": event.meeting_title,
-        "description": event.discussion or "",
-        "start": {
-            "dateTime": event.meeting_from.isoformat(),
-            "timeZone": "Asia/Kolkata"
-        },
-        "end": {
-            "dateTime": event.meeting_to.isoformat(),
-            "timeZone": "Asia/Kolkata"
-        },
-        "conferenceData": {
-            "createRequest": {
-                "requestId": frappe.generate_hash(length=10)
-            }
-        },
-        "attendees": []
-    }
+	def get_utc_start_time_str(local_dt):
+		system_tz = pytz.timezone(get_system_timezone() or "UTC")
+		if local_dt.tzinfo is None:
+			local_dt = system_tz.localize(local_dt)
+		utc_dt = local_dt.astimezone(pytz.utc)
+		return utc_dt.strftime("%Y%m%dT%H%M%SZ")
 
-    # Add Participants
-    for participant in event.meeting_party_representative:
+	if rrule:
+		# -----------------------------
+		# Recurring Event flow
+		# -----------------------------
+		# In Google Calendar, we create/update a single parent event with the RRULE recurrence rule.
+		# Google Calendar automatically handles all instance generation.
+		
+		parent_fe = frappe_events[0] if frappe_events else None
+		
+		starts_on = parent_fe.starts_on if parent_fe else event.meeting_from
+		ends_on = parent_fe.ends_on if parent_fe else event.meeting_to
+		parent_g_id = parent_fe.google_calendar_event_id if parent_fe else None
 
-        if participant.user:
-            body["attendees"].append({
-                "email": participant.user
-            })
+		body = {
+			"summary": event.meeting_title,
+			"description": event.discussion or "",
+			"start": {
+				"dateTime": get_datetime(starts_on).isoformat(),
+				"timeZone": "Asia/Kolkata"
+			},
+			"end": {
+				"dateTime": get_datetime(ends_on).isoformat(),
+				"timeZone": "Asia/Kolkata"
+			},
+			"recurrence": [rrule],
+			"attendees": attendees
+		}
 
-    created_event = service.events().insert(
-        calendarId="primary",
-        body=body,
-        conferenceDataVersion=1,
-        sendUpdates="all"
-    ).execute()
+		conference_data = None
+		meet_link = None
+		
+		if parent_g_id:
+			try:
+				g_event = service.events().get(calendarId=calendar_id, eventId=parent_g_id).execute()
+				conference_data = g_event.get("conferenceData")
+				meet_link = g_event.get("hangoutLink")
+			except Exception:
+				parent_g_id = None
 
-    meet_link = created_event.get("hangoutLink")
+		if not conference_data:
+			body["conferenceData"] = {
+				"createRequest": {
+					"requestId": frappe.generate_hash(length=10),
+					"conferenceSolutionKey": {"type": "hangoutsMeet"}
+				}
+			}
 
-    event.db_set(
-        "meet_link",
-        meet_link
-    )
+		if parent_g_id:
+			g_event = service.events().update(
+				calendarId=calendar_id,
+				eventId=parent_g_id,
+				body=body,
+				conferenceDataVersion=1,
+				sendUpdates="all"
+			).execute()
+		else:
+			g_event = service.events().insert(
+				calendarId=calendar_id,
+				body=body,
+				conferenceDataVersion=1,
+				sendUpdates="all"
+			).execute()
 
-    return {
-        "meet_link": meet_link,
-        "google_event_id": created_event.get("id")
-    }
+		parent_g_id = g_event.get("id")
+		meet_link = g_event.get("hangoutLink")
 
+		# Update all corresponding Frappe Event documents with calculated instance IDs
+		if frappe_events:
+			for idx, fe in enumerate(frappe_events):
+				if idx == 0:
+					fe_g_id = parent_g_id
+				else:
+					utc_str = get_utc_start_time_str(get_datetime(fe.starts_on))
+					fe_g_id = f"{parent_g_id}_{utc_str}"
+
+				update_dict = {
+					"google_calendar": google_calendar.name,
+					"google_calendar_id": calendar_id,
+					"google_calendar_event_id": fe_g_id,
+					"google_meet_link": meet_link
+				}
+				if frappe.get_meta("Event").has_field("custom_meet_link"):
+					update_dict["custom_meet_link"] = meet_link
+
+				frappe.db.set_value("Event", fe.name, update_dict, update_modified=False)
+
+			frappe.db.commit()
+
+	else:
+		# -----------------------------
+		# Non-recurring Event flow (single event)
+		# -----------------------------
+		fe = frappe_events[0] if frappe_events else None
+		
+		starts_on = fe.starts_on if fe else event.meeting_from
+		ends_on = fe.ends_on if fe else event.meeting_to
+		g_id = fe.google_calendar_event_id if fe else None
+
+		body = {
+			"summary": event.meeting_title,
+			"description": event.discussion or "",
+			"start": {
+				"dateTime": get_datetime(starts_on).isoformat(),
+				"timeZone": "Asia/Kolkata"
+			},
+			"end": {
+				"dateTime": get_datetime(ends_on).isoformat(),
+				"timeZone": "Asia/Kolkata"
+			},
+			"attendees": attendees
+		}
+
+		conference_data = None
+		meet_link = None
+		
+		if g_id:
+			try:
+				g_event = service.events().get(calendarId=calendar_id, eventId=g_id).execute()
+				conference_data = g_event.get("conferenceData")
+				meet_link = g_event.get("hangoutLink")
+			except Exception:
+				g_id = None
+
+		if not conference_data:
+			body["conferenceData"] = {
+				"createRequest": {
+					"requestId": frappe.generate_hash(length=10),
+					"conferenceSolutionKey": {"type": "hangoutsMeet"}
+				}
+			}
+
+		if g_id:
+			g_event = service.events().update(
+				calendarId=calendar_id,
+				eventId=g_id,
+				body=body,
+				conferenceDataVersion=1,
+				sendUpdates="all"
+			).execute()
+		else:
+			g_event = service.events().insert(
+				calendarId=calendar_id,
+				body=body,
+				conferenceDataVersion=1,
+				sendUpdates="all"
+			).execute()
+
+		parent_g_id = g_event.get("id")
+		meet_link = g_event.get("hangoutLink")
+
+		if fe:
+			update_dict = {
+				"google_calendar": google_calendar.name,
+				"google_calendar_id": calendar_id,
+				"google_calendar_event_id": parent_g_id,
+				"google_meet_link": meet_link
+			}
+			if frappe.get_meta("Event").has_field("custom_meet_link"):
+				update_dict["custom_meet_link"] = meet_link
+
+			frappe.db.set_value("Event", fe.name, update_dict, update_modified=False)
+			frappe.db.commit()
+
+	if meet_link:
+		event.db_set("meet_link", meet_link)
+
+	return {
+		"meet_link": meet_link,
+		"google_event_id": parent_g_id
+	}
 
 @frappe.whitelist()
 def create_follow_up_meeting(
