@@ -240,10 +240,16 @@ class SNMTask(Document):
 			user = self.allocated_by
 		else:
 			user = frappe.session.user
-		dept = frappe.db.get_value("Employee", {"user_id": user}, "department")
-		if not dept:
-			return frappe.throw(_("No department found for user {0}").format(user))
-		self.department = dept
+
+		dept = frappe.db.get_value(
+			"Employee",
+			{"user_id": user},
+			"department"
+		)
+
+		# Set only if department found
+		if dept:
+			self.department = dept
 		
 @frappe.whitelist()
 def get_task_assignees(task):

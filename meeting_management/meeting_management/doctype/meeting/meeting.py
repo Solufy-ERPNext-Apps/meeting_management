@@ -143,7 +143,7 @@ class Meeting(Document):
 
 		# Create Main Event
 		main_event = frappe.new_doc("Event")
-		main_event.subject = self.name
+		main_event.subject = self.meeting_title
 		main_event.event_type = "Private"
 		main_event.starts_on = self.meeting_from
 		main_event.ends_on = self.meeting_to
@@ -193,7 +193,7 @@ class Meeting(Document):
 
 						recurring_event = frappe.new_doc("Event")
 
-						recurring_event.subject = f"{self.name}"
+						recurring_event.subject = f"{self.meeting_title}"
 						recurring_event.event_type = "Private"
 
 						# Keep same time
@@ -311,11 +311,12 @@ def send_mail(self):
 	if res.get('discussion'):
 		body = ""
 		main_body = '{}'.format(res.get('discussion'))
-		for idx ,row in enumerate(res.get('actionables')):
-			Date = frappe.format(res.get('actionables')[idx].get('expected_completion_date') , {'fieldtype': 'Date'})
-			body += '<br><br><strong>Actionable:</strong> {}<br> <strong>Responsible:</strong> {}<br><strong>Expected Completion Date:</strong>{}'.format( res.get('actionables')[idx].get('actionable') ,res.get('actionables')[idx].get('responsible'),Date)
-		main_body = main_body + body
-		email_body = MIMEText(main_body, 'html')
+		if res.get('actionables'):
+			for idx ,row in enumerate(res.get('actionables')):
+				Date = frappe.format(res.get('actionables')[idx].get('expected_completion_date') , {'fieldtype': 'Date'})
+				body += '<br><br><strong>Actionable:</strong> {}<br> <strong>Responsible:</strong> {}<br><strong>Expected Completion Date:</strong>{}'.format( res.get('actionables')[idx].get('actionable') ,res.get('actionables')[idx].get('responsible'),Date)
+			main_body = main_body + body
+			email_body = MIMEText(main_body, 'html')
 
 	msg.attach(email_body)
 	msgAlternative = MIMEMultipart('alternative')
