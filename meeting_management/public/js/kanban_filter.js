@@ -23,7 +23,7 @@ frappe.router.on('change', () => {
                     clearInterval(interval);
 
                     let current_user = frappe.session.user;
-
+                    console.log("Applying Kanban filter for user:", current_user);
                     // Clear old filters
                     cur_list.filter_area.clear(false);
 

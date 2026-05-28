@@ -107,7 +107,8 @@ frappe.ui.form.on('Meeting', {
 				fieldname: "description",
 				label: "Description",
 				fieldtype: "Small Text",
-				default: frm.doc.discussion
+				default: frappe.utils.html2text(frm.doc.discussion || "")
+
 			},
 		],
 

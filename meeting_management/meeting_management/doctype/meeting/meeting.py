@@ -697,9 +697,6 @@ def create_follow_up_meeting(
 	m.meeting_type = parent_doc.meeting_type
 	m.user_type = parent_doc.user_type
 	m.meeting_party_representative = parent_doc.meeting_party_representative
-
-	m.insert(ignore_permissions=True)
-
-	frappe.db.commit()
-
+	
+	m.insert(ignore_permissions=True ,ignore_mandatory=True)
 	return m.name
