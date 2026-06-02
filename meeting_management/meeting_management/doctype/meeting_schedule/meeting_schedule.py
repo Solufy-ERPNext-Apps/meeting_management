@@ -33,7 +33,7 @@ class MeetingSchedule(Document):
 		default_sender_name, default_sender =frappe.db.get_value('Email Account',{'default_outgoing':1},['name','email_id'])
 		
 		if not default_sender:
-			frappe.throw("Please Setup Default Outgoing Email Account.")
+			frappe.throw(_("Please Setup Default Outgoing Email Account."))
 		organizer = "ORGANIZER;CN=" +default_sender+":mailto:"+default_sender
 		dtstamp = datetime.datetime.now().strftime("%Y%m%dT%H%M%S")
 		dtstart = get_datetime(self.scheduled_from).strftime("%Y%m%dT%H%M%S")
@@ -112,9 +112,9 @@ class MeetingSchedule(Document):
 		doc.user = frappe.session.user
 		doc.email_account = default_sender_name
 		doc.save(ignore_permissions=True)
-		frappe.msgprint("Mail Sent Successfully")
+		frappe.msgprint(_("Mail Sent Successfully"))
 @frappe.whitelist()
-def make_meeting(source_name, target_doc=None):	
+def make_meeting(source_name: str, target_doc: dict | None = None):	
 	doclist = get_mapped_doc("Meeting Schedule", source_name, {
 			"Meeting Schedule":{
 				"doctype": "Meeting",
@@ -136,9 +136,14 @@ def make_meeting(source_name, target_doc=None):
 			}
 	}, target_doc)	
 	return doclist
-	
-@frappe.whitelist()
-def get_events(start, end, filters=None):
+from typing import Optional
+frappe.whitelist()
+def get_events(
+	start: str,
+	end: str,
+	filters: Optional[str] = None
+):
+
 	"""Returns events for Gantt / Calendar view rendering.
 	:param start: Start date-time.
 	:param end: End date-time.

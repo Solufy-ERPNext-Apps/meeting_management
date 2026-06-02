@@ -150,24 +150,11 @@ override_doctype_dashboards = {
 # Scheduled Tasks
 # ---------------
 
-# scheduler_events = {
-#	"all": [
-#		"meeting_management.tasks.all"
-#	],
-#	"daily": [
-#		"meeting_management.tasks.daily"
-#	],
-#	"hourly": [
-#		"meeting_management.tasks.hourly"
-#	],
-#	"weekly": [
-#		"meeting_management.tasks.weekly"
-#	],
-#	"monthly": [
-#		"meeting_management.tasks.monthly"
-#	],
-# }
-
+scheduler_events = {
+	"daily": [
+		"meeting_management.meeting_management.doctype.snm_task.snm_task.send_overdue_task_notifications"
+	]
+}
 # Testing
 # -------
 
@@ -176,7 +163,7 @@ override_doctype_dashboards = {
 # Overriding Methods
 # ------------------------------
 #
-# override_whitelisted_methods = {
+# override_whitelisted_methods = {customer_dashboard
 #	"frappe.desk.doctype.event.event.get_events": "meeting_management.event.get_events"
 # }
 #
@@ -222,6 +209,9 @@ override_doctype_dashboards = {
 # auth_hooks = [
 #	"meeting_management.auth.validate"
 # ]
-from erpnext.selling.doctype.customer import customer_dashboard
-from meeting_management.api import customer_get_data
-customer_dashboard.get_data = customer_get_data
+# from erpnext.selling.doctype.customer import customer_dashboard
+# from meeting_management.api import customer_get_data
+# customer_dashboard.get_data = customer_get_data
+override_whitelisted_methods = {
+    "erpnext.selling.doctype.customer.customer_dashboard.get_data": "meeting_management.api.customer_get_data"
+}

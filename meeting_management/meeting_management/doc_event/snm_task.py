@@ -1,19 +1,9 @@
-# import frappe
-# @frappe.whitelist()
-# def get_my_assigned_count():
-#     user = frappe.session.user
-#     count = frappe.db.count("ToDo", filters={"reference_type":"SNM Task","allocated_to": user})
-#     frappe.response['message'] = {
-#         "value": count,
-#         "fieldtype": "Int",
-#         "route_options": {"assigned_to": user},
-#         "route": ["List", "SNM Task"]
-#     }
+
 import frappe
 import json
-
+from typing import Optional, Dict, Any
 @frappe.whitelist()
-def get_my_assigned_count(filters=None):
+def get_my_assigned_count(filters= None):
 	user = frappe.session.user
 
 	task_filters = []

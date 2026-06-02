@@ -110,7 +110,7 @@ frappe.ui.form.on('Meeting Schedule', {
 	},
 	send_invitation: function(frm){
 		if (frm.is_dirty()){
-			frappe.throw("Please Save the Current Document and Then Proceed again")
+			frappe.throw(__("Please Save the Current Document and Then Proceed again"))
 		}
 		else{
 			frm.call('send_invitation');

@@ -153,28 +153,51 @@ class SNMTask(Document):
 			throw(
 				_("Child Task exists for this Task. You can not delete this Task.")
 			)
-
 	def update_meet(self):
 		if not self.meeting:
 			return
+
 		meet = frappe.get_doc("Meeting", self.meeting)
-		if not meet.tasks:
-			meet.append("tasks", {"task": self.name,
-			   "subject": self.subject,
-			   "user": self.allocated_by,
-			   "status": self.status,
-			   "priority": self.priority,
-			   "start_date": self.start_date,
-			   "due_date": self.due_date,
-			   "parent_task": self.parent_task
-			}
-			)
-			meet.save()
-		else:
-			for row in meet.tasks:
-				if row.task != self.name:
-					meet.append("tasks", {"task": self.name})
-					meet.save()
+
+		if any(row.task == self.name for row in meet.tasks):
+			return
+
+		meet.append("tasks", {
+			"task": self.name,
+			"subject": self.subject,
+			"user": self.allocated_by,
+			"status": self.status,
+			"priority": self.priority,
+			"start_date": self.start_date,
+			"due_date": self.due_date,
+			"parent_task": self.parent_task
+		})
+
+		meet.save(ignore_permissions=True)
+	# def update_meet(self):
+	# 	if not self.meeting:
+	# 		frappe.throw(_("Task already exists in the Meeting."))
+	# 		return
+	# 	meet = frappe.get_doc("Meeting", self.meeting)
+	# 	if not meet.tasks:
+	# 		# frappe.throw(":::::::::::::")
+	# 		meet.append("tasks", {"task": self.name,
+	# 		   "subject": self.subject,
+	# 		   "user": self.allocated_by,
+	# 		   "status": self.status,
+	# 		   "priority": self.priority,
+	# 		   "start_date": self.start_date,
+	# 		   "due_date": self.due_date,
+	# 		   "parent_task": self.parent_task
+	# 		}
+	# 		)
+	# 		meet.save()
+	# 	else:
+	# 		for row in meet.tasks:
+	# 			if row.task != self.name:
+	# 				frappe.throw("::::::111111:::::::")
+	# 				meet.append("tasks", {"task": self.name})
+	# 				meet.save()
 
 		
 
@@ -252,7 +275,7 @@ class SNMTask(Document):
 			self.department = dept
 		
 @frappe.whitelist()
-def get_task_assignees(task):
+def get_task_assignees(task:str):
 
 	assign = frappe.db.get_list(
 		"ToDo",
@@ -292,7 +315,7 @@ def get_task_assignees(task):
 
 
 @frappe.whitelist()
-def check_if_child_exists(name):
+def check_if_child_exists(name:str):
 
 	child_tasks = frappe.get_all(
 		"SNM Task",
@@ -308,8 +331,12 @@ def check_if_child_exists(name):
 
 
 @frappe.whitelist()
-def get_children(doctype, parent, task=None, project=None, is_root=False):
-
+def get_children(
+    doctype: str,
+    parent: str,
+    task: str | None = None,
+    project: str | None = None,
+    is_root: bool = False,) -> list:
 	filters = [["docstatus", "<", "2"]]
 
 	if task:
@@ -365,7 +392,7 @@ def add_node():
 
 
 @frappe.whitelist()
-def add_multiple_tasks(data, parent):
+def add_multiple_tasks(data:str, parent:str):
 
 	data = json.loads(data)
 
@@ -394,3 +421,114 @@ def add_multiple_tasks(data, parent):
 
 def on_doctype_update():
 	frappe.db.add_index("SNM Task", ["lft", "rgt"])
+
+import frappe
+from frappe.utils import get_url_to_form
+
+
+def send_overdue_task_notifications():
+
+    user_tasks = {}
+
+    overdue_tasks = frappe.get_all(
+        "SNM Task",
+        filters={"status": "Overdue"},
+        fields=["name", "subject"]
+    )
+
+    for task in overdue_tasks:
+
+        todos = frappe.get_all(
+            "ToDo",
+            filters={
+                "reference_type": "SNM Task",
+                "reference_name": task.name,
+                "allocated_to": ["is", "set"]
+            },
+            fields=["allocated_to"]
+        )
+
+        for todo in todos:
+
+            if todo.allocated_to not in user_tasks:
+                user_tasks[todo.allocated_to] = []
+
+            user_tasks[todo.allocated_to].append(task)
+
+    for user, tasks in user_tasks.items():
+
+        rows = ""
+
+        for idx, task in enumerate(tasks, 1):
+
+            task_link = get_url_to_form("SNM Task", task.name)
+
+            rows += f"""
+            <tr>
+                <td>{idx}</td>
+                <td>
+                    <a href="{task_link}">
+                        {task.name}
+                    </a>
+                </td>
+                <td>{task.subject or ''}</td>
+            </tr>
+            """
+
+        message = f"""
+        <div style="font-family: Arial, sans-serif; max-width: 800px;">
+
+            <h2 style="color:#d9534f;">
+                Overdue Task Notification
+            </h2>
+
+            <p>Hello,</p>
+
+            <p>
+                You have <b>{len(tasks)}</b> overdue task(s) assigned to you.
+            </p>
+
+            <table
+                border="1"
+                cellpadding="8"
+                cellspacing="0"
+                width="100%"
+                style="border-collapse:collapse;"
+            >
+                <thead>
+                    <tr style="background-color:#f5f5f5;">
+                        <th>#</th>
+                        <th>Task</th>
+                        <th>Subject</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {rows}
+                </tbody>
+            </table>
+
+            <br>
+
+            <p>
+                Please review and update these tasks.
+            </p>
+
+            <hr>
+
+            <p style="font-size:12px;color:gray;">
+                This is an automated notification from ERPNext.
+            </p>
+
+        </div>
+        """
+
+        frappe.sendmail(
+            recipients=[user],
+            subject=f"{len(tasks)} Overdue Task(s) Assigned To You",
+            message=message,
+            delayed=False
+        )
+
+        frappe.logger().info(
+            f"Overdue notification sent to {user} for {len(tasks)} tasks"
+        )

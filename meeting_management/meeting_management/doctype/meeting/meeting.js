@@ -25,7 +25,7 @@ frappe.ui.form.on('Meeting', {
 
 	send_mail: function(frm){
 		if (frm.is_dirty()){
-			frappe.throw("Please Save the Current Document and Then Proceed again")
+			frappe.throw(__("Please Save the Current Document and Then Proceed again"))
 		}
 		else{
 			frappe.call({
@@ -40,6 +40,10 @@ frappe.ui.form.on('Meeting', {
 		disable_add_and_delete_row(frm);
 	},
 	refresh: function(frm) {
+ 		let grid = frm.fields_dict.recurring_meeting.grid;
+        grid.wrapper.find('.grid-row-check').css('visibility', 'hidden');
+        grid.wrapper.find('.row-check').css('visibility', 'hidden');
+		grid.wrapper.find('.btn-open-row').hide();
 		frm.fields_dict.contact_person.get_query = function(doc) {
 			return {
 				query: 'frappe.contacts.doctype.contact.contact.contact_query',
@@ -67,45 +71,57 @@ frappe.ui.form.on('Meeting', {
 				}
 			}
 		};
-		if (!frm.doc.__islocal && frm.doc.docstatus === 1) {
-	frm.add_custom_button(__("Create Task"), () => {
+	// 	if (!frm.doc.__islocal && frm.doc.docstatus === 1) {
+	// frm.add_custom_button(__("Create Task"), () => {
 
-	frappe.new_doc("SNM Task", {
-		meeting: frm.doc.name
-	});
-	}).css({
-		"background-color": "black",
-		"color": "#fff"
-	});
-	}
+	// frappe.new_doc("SNM Task", {
+	// 	meeting: frm.doc.name
+	// });
+	// }).css({
+	// 	"background-color": "black",
+	// 	"color": "#fff"
+	// });
+	// }
+if (!frm.is_new() && frm.doc.docstatus === 1) {
+
+            frm.add_custom_button(__("Create Task"), () => {
+
+                frappe.model.open_mapped_doc({
+                    method: "meeting_management.meeting_management.doctype.meeting.meeting.make_task",
+                    frm: frm
+                });
+
+            }, __("Create"));
+
+        }
 	if (!frm.is_new() && frm.doc.docstatus === 1) {
-		frm.add_custom_button("Follow Up", () => {
+		frm.add_custom_button(__("Follow Up"), () => {
 
 	let d = new frappe.ui.Dialog({
 		title: "Create Follow Up",
 		fields: [
 			{
 				fieldname: "subject",
-				label: "Subject",
+				label: __("Subject"),
 				fieldtype: "Data",
 				reqd: 1,
 				default:frm.doc.meeting_title
 			},
 			{
 				fieldname: "follow_up_date",
-				label: "Start Date",
+				label: __("Start Date"),
 				fieldtype: "Datetime",
 				reqd: 1
 			},
 			{
 				fieldname: "follow_end_date",
-				label: "End Date",
+				label: __("End Date"),
 				fieldtype: "Datetime",
 				reqd: 1
 			},
 			{
 				fieldname: "description",
-				label: "Description",
+				label: __("Description"),
 				fieldtype: "Small Text",
 				default: frappe.utils.html2text(frm.doc.discussion || "")
 
@@ -142,13 +158,11 @@ frappe.ui.form.on('Meeting', {
 	});
 
 	d.show();
-
-}).css({
-	"background-color": "black",
-	"color": "#fff"
-});
-			if(!frm.doc.meet_link && frm.doc.docstatus === 1){
-				frm.add_custom_button("Create Google Meet", () => {
+	
+},__("Create"));
+}
+	if(!frm.doc.meet_link && !frm.is_new()){
+				frm.add_custom_button(__("Create Google Meet"), () => {
 
 					frappe.call({
 						method: "meeting_management.meeting_management.doctype.meeting.meeting.create_google_meet",
@@ -169,9 +183,11 @@ frappe.ui.form.on('Meeting', {
 						}
 					});
 
-				});
+				}).css({
+	"background-color": "black",
+	"color": "#fff"
+});
 			}
-		}
 
 	},
 	meeting_from(frm) {
@@ -259,3 +275,10 @@ function disable_add_and_delete_row(frm) {
     frm.refresh_field("recurring_meeting");
   }
 }
+
+frappe.ui.form.on("Meeting", {
+    refresh(frm) {
+       
+
+    }
+});

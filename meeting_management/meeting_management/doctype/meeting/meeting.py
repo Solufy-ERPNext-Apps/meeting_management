@@ -1,8 +1,9 @@
 # Copyright (c) 2023, Finbyz Tech PVT LTD and contributors
 # For license information, please see license.txt
 
-
 from __future__ import unicode_literals
+from frappe.query_builder import DocType
+
 import frappe
 from frappe.model.document import Document
 from frappe import msgprint, db, _
@@ -226,9 +227,14 @@ class Meeting(Document):
 	# 	# event.custom_contact_person=self.contact_p
 	# 	event.description=self.discussion
 	# 	return event.name
-
+from typing import Any
 @frappe.whitelist()
-def get_events(start, end, filters=None):
+@frappe.whitelist()
+def get_events(
+    start: str,
+    end: str,
+    filters: dict[str, Any] | None = None
+) -> list:
 	"""Returns events for Gantt / Calendar view rendering.
 	:param start: Start date-time.
 	:param end: End date-time.
@@ -237,20 +243,32 @@ def get_events(start, end, filters=None):
 	#filters = json.loads(filters)
 	from frappe.desk.calendar import get_event_conditions
 	conditions = get_event_conditions("Meeting", filters)
+	Meeting = DocType("Meeting")
 
-	data = frappe.db.sql("""
-			select 
-				name, meeting_from, meeting_to, organization, party
-			from 
-				`tabMeeting`
-			where
-				(meeting_from <= %(end)s and meeting_to >= %(start)s) {conditions}
-			""".format(conditions=conditions),
-				{
-					"start": start,
-					"end": end
-				}, as_dict=True, update={"allDay": 0})
-
+	# data = frappe.db.sql("""
+	# 		select 
+	# 			name, meeting_from, meeting_to, organization, party
+	# 		from 
+	# 			`tabMeeting`
+	# 		where
+	# 			(meeting_from <= %(end)s and meeting_to >= %(start)s) {conditions}
+	# 		""".format(conditions=conditions),
+	# 			{
+	# 				"start": start,
+	# 				"end": end
+	# 			}, as_dict=True, update={"allDay": 0})
+	data = (
+		frappe.qb.from_(Meeting)
+		.select(
+			Meeting.name,
+			Meeting.meeting_from,
+			Meeting.meeting_to,
+			Meeting.organization,
+			Meeting.party,
+		)
+		.where(Meeting.meeting_from <= end)
+		.where(Meeting.meeting_to >= start)
+	).run(as_dict=True)
 	if not data:
 		return []
 		
@@ -271,7 +289,7 @@ def send_mail(self):
 	CRLF = "\r\n"
 	default_sender_name, default_sender =frappe.db.get_value('Email Account',{'default_outgoing':1},['name','email_id'])
 	if not default_sender:
-		frappe.throw("Please Setup Default Outgoing Email Account.")
+		frappe.throw(_("Please Setup Default Outgoing Email Account."))
 	organizer = "ORGANIZER;CN=" +default_sender+":mailto:"+default_sender
 	dtstamp = datetime.datetime.now().strftime("%Y%m%dT%H%M%S")
 	dtstart = get_datetime(res.get('meeting_from')).strftime("%Y%m%dT%H%M%S")
@@ -453,7 +471,7 @@ from google.auth.transport.requests import Request
 #     }
 
 @frappe.whitelist()
-def create_google_meet(event_name):
+def create_google_meet(event_name:str):
 
 	# ERPNext Event
 	event = frappe.get_doc("Meeting", event_name)
@@ -462,7 +480,7 @@ def create_google_meet(event_name):
 	google_calendar = frappe.get_last_doc("Google Calendar")
 
 	if not google_calendar or not google_calendar.name:
-		frappe.throw("Google Calendar is not authorized.")
+		frappe.throw(_("Google Calendar is not authorized."))
 
 	from frappe.integrations.doctype.google_calendar.google_calendar import get_google_calendar_object
 	service, google_calendar_doc = get_google_calendar_object(google_calendar.name)
@@ -583,7 +601,7 @@ def create_google_meet(event_name):
 
 				frappe.db.set_value("Event", fe.name, update_dict, update_modified=False)
 
-			frappe.db.commit()
+			# frappe.db.commit()
 
 	else:
 		# -----------------------------
@@ -658,7 +676,7 @@ def create_google_meet(event_name):
 				update_dict["custom_meet_link"] = meet_link
 
 			frappe.db.set_value("Event", fe.name, update_dict, update_modified=False)
-			frappe.db.commit()
+			# frappe.db.commit()
 
 	if meet_link:
 		event.db_set("meet_link", meet_link)
@@ -670,13 +688,13 @@ def create_google_meet(event_name):
 
 @frappe.whitelist()
 def create_follow_up_meeting(
-	parent_meeting,
-	subject,
-	description=None,
-	follow_up_date=None,
-	contact_person=None,
-	follow_end_date=None
-):
+    parent_meeting: str,
+    subject: str,
+    description: str | None = None,
+    follow_up_date: str | None = None,
+    contact_person: str | None = None,
+    follow_end_date: str | None = None,
+) -> str:
 
 	# Fetch Parent Meeting
 	parent_doc = frappe.get_doc("Meeting", parent_meeting)
@@ -700,3 +718,34 @@ def create_follow_up_meeting(
 	
 	m.insert(ignore_permissions=True ,ignore_mandatory=True)
 	return m.name
+
+
+from frappe.model.mapper import get_mapped_doc
+
+@frappe.whitelist()
+def make_task(source_name, target_doc=None):
+
+    def postprocess(source, target):
+        target.meeting = source.name
+        target.allocated_by = frappe.session.user
+
+        # Optional field mapping
+        if hasattr(target, "subject"):
+            target.subject = source.meeting_title or source.name
+
+        if hasattr(target, "description"):
+            target.description = source.discussion or ""
+
+    doc = get_mapped_doc(
+        "Meeting",
+        source_name,
+        {
+            "Meeting": {
+                "doctype": "SNM Task"
+            }
+        },
+        target_doc,
+        postprocess
+    )
+
+    return doc

@@ -27,6 +27,7 @@
   "created_from_parent",
   "sb_details",
   "description",
+  "remarks",
   "sb_depends_on",
   "depends_on",
   "depends_on_tasks",
@@ -236,6 +237,11 @@
    "fieldtype": "Link",
    "label": "Meeting Reference",
    "options": "Meeting"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
   }
  ],
  "icon": "fa fa-check",
@@ -243,7 +249,7 @@
  "is_tree": 1,
  "links": [],
  "max_attachments": 5,
- "modified": "2026-05-28 12:29:00.312049",
+ "modified": "2026-06-01 16:57:31.831188",
  "modified_by": "Administrator",
  "module": "Meeting Management",
  "name": "SNM Task",
