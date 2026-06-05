@@ -133,14 +133,14 @@ class Meeting(Document):
 				task.due_date = row.due_date
 				task.meeting = self.name
 				task.description = row.description
-				if row.is_has_sub_task:
+				if row.has_sub_task:
 					task.is_group = 1
 				if row.parent_task:
 					task.parent_task = row.parent_task
 				task.department = frappe.db.get_value("Employee",{"user_id":row.user},"department")
 				task.save(ignore_permissions=True)
 				row.task = task.name
-		# self.save()
+	
 	def update_description(self):
 		if not self.tasks:
 			return
