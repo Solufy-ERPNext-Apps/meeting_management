@@ -90,11 +90,11 @@
    "options": "SNM Task"
   },
   {
-   "allow_on_submit": 1,
    "fieldname": "description",
    "fieldtype": "Text Editor",
    "in_list_view": 1,
-   "label": "Description"
+   "label": "Description",
+   "read_only_depends_on": "eval:doc.task"
   },
   {
    "default": "0",
@@ -108,7 +108,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-06-05 16:21:09.847779",
+ "modified": "2026-06-05 18:00:47.814668",
  "modified_by": "Administrator",
  "module": "Meeting Management",
  "name": "Child Tasks",

@@ -22,6 +22,8 @@ class SNMTask(Document):
 		self.validate_due_date()
 		self.get_dept()
 		self.update_description()
+		self.update_snm_description()
+		self.update_child_description()
 
 	def before_insert(self):
 		self.get_task_no()
@@ -138,7 +140,8 @@ class SNMTask(Document):
 				"priority": row.priority,
 				"created_from_parent": 1,
 				"start_date": row.start_date,
-				"due_date": row.due_date
+				"due_date": row.due_date,
+				"description": row.description
 			})
 
 			child_task.flags.ignore_child_creation = True
@@ -155,6 +158,23 @@ class SNMTask(Document):
 			return
 		row = frappe.db.get_value("Child Tasks",{"parent":self.meeting,"task":self.name},"name")
 		frappe.db.set_value("Child Tasks",row,"description",self.description)
+
+	def update_snm_description(self):
+		if not self.parent_task:
+			return
+		if not self.has_value_changed("description"):
+			return
+		row = frappe.db.get_value("Child Tasks",{"parent":self.parent_task,"task":self.name},"name")
+		frappe.db.set_value("Child Tasks",row,"description",self.description)
+
+	def update_child_description(self):
+		if not self.depends_on:
+			return
+		for row in self.depends_on:
+			if not row.task:
+				return
+			if row.has_value_changed("description"):
+				frappe.db.set_value("Task Depends On",{"name":row.name},"description",self.description)
 
 	def on_trash(self):
 
