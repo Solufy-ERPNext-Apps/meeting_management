@@ -162,7 +162,6 @@
   {
    "fieldname": "sb_depends_on",
    "fieldtype": "Section Break",
-   "label": "Dependencies",
    "oldfieldtype": "Section Break"
   },
   {
@@ -241,6 +240,7 @@
   {
    "fieldname": "remarks",
    "fieldtype": "Small Text",
+   "hidden": 1,
    "label": "Remarks"
   }
  ],
@@ -249,7 +249,7 @@
  "is_tree": 1,
  "links": [],
  "max_attachments": 5,
- "modified": "2026-06-01 16:57:31.831188",
+ "modified": "2026-06-05 11:11:59.531563",
  "modified_by": "Administrator",
  "module": "Meeting Management",
  "name": "SNM Task",

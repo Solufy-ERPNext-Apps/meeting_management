@@ -14,7 +14,9 @@
   "user",
   "start_date",
   "due_date",
-  "parent_task"
+  "is_has_sub_task",
+  "parent_task",
+  "description"
  ],
  "fields": [
   {
@@ -40,6 +42,7 @@
    "read_only_depends_on": "eval:doc.task"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "status",
    "fieldtype": "Select",
    "in_list_view": 1,
@@ -48,6 +51,7 @@
    "read_only_depends_on": "eval:doc.task"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "priority",
    "fieldtype": "Select",
    "in_list_view": 1,
@@ -83,13 +87,27 @@
    "in_list_view": 1,
    "label": "Parent Task",
    "options": "SNM Task"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_has_sub_task",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Is Has Sub Task"
+  },
+  {
+   "allow_on_submit": 1,
+   "fieldname": "description",
+   "fieldtype": "Text Editor",
+   "in_list_view": 1,
+   "label": "Description"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-05-19 13:08:19.474301",
+ "modified": "2026-06-05 14:14:32.626637",
  "modified_by": "Administrator",
  "module": "Meeting Management",
  "name": "Child Tasks",

@@ -58,9 +58,9 @@ class Meeting(Document):
 		return f"RRULE:FREQ=WEEKLY;BYDAY={','.join(byday)};UNTIL={until_str}"
 
 	def before_update_after_submit(self):
-		# frappe.throw("::::::::::::::")
 		self.create_task()
 	def validate(self):
+		self.update_description()
 		if self.meeting_to and self.meeting_to<self.meeting_from:
 			frappe.throw(_("Meeting To cannot be less than Meeting From"))
 		if self.party_type and self.party:
@@ -132,14 +132,23 @@ class Meeting(Document):
 				task.start_date = row.start_date
 				task.due_date = row.due_date
 				task.meeting = self.name
+				task.description = row.description
+				if row.is_has_sub_task:
+					task.is_group = 1
+				if row.parent_task:
+					task.parent_task = row.parent_task
 				task.department = frappe.db.get_value("Employee",{"user_id":row.user},"department")
 				task.save(ignore_permissions=True)
-
 				row.task = task.name
 		# self.save()
-	
-
-
+	def update_description(self):
+		if not self.tasks:
+			return
+		for row in self.tasks:
+			if not row.task:
+				return
+			if row.has_value_changed("desctiption"):
+				frappe.db.set_value("SNM Task", row.task, "description", self.description)
 	def create_event(self):
 
 		# Create Main Event

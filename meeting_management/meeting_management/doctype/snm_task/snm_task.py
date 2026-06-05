@@ -21,6 +21,7 @@ class SNMTask(Document):
 		self.validate_parent_is_group()
 		self.validate_due_date()
 		self.get_dept()
+		self.update_description()
 
 	def before_insert(self):
 		self.get_task_no()
@@ -73,7 +74,6 @@ class SNMTask(Document):
 		if self.parent_task and not self.created_from_parent:
 
 			parent = frappe.get_doc("SNM Task", self.parent_task)
-
 			existing_tasks = [row.task for row in parent.depends_on]
 
 			if self.name not in existing_tasks:
@@ -83,14 +83,17 @@ class SNMTask(Document):
 					{
 						"doctype": "Task Depends On",
 						"task": self.name,
-						"subject": self.subject
+						"subject": self.subject,
+						"description": self.description,
+						"priority": self.priority,
+						"status":self.status,
 					}
 				)
 
 				parent.flags.ignore_child_creation = True
 
 				parent.save(ignore_permissions=True)
-
+			
 	def unassign_todo(self):
 
 		if self.status == "Completed":
@@ -145,6 +148,13 @@ class SNMTask(Document):
 			# Update only current row
 			row.db_set("task", child_task.name)
 
+	def update_description(self):
+		if not self.meeting:
+			return
+		if not self.has_value_changed("description"):
+			return
+		row = frappe.db.get_value("Child Tasks",{"parent":self.meeting,"task":self.name},"name")
+		frappe.db.set_value("Child Tasks",row,"description",self.description)
 
 	def on_trash(self):
 
@@ -170,37 +180,12 @@ class SNMTask(Document):
 			"priority": self.priority,
 			"start_date": self.start_date,
 			"due_date": self.due_date,
-			"parent_task": self.parent_task
+			"parent_task": self.parent_task,
+			"description": self.description
 		})
 
 		meet.save(ignore_permissions=True)
-	# def update_meet(self):
-	# 	if not self.meeting:
-	# 		frappe.throw(_("Task already exists in the Meeting."))
-	# 		return
-	# 	meet = frappe.get_doc("Meeting", self.meeting)
-	# 	if not meet.tasks:
-	# 		# frappe.throw(":::::::::::::")
-	# 		meet.append("tasks", {"task": self.name,
-	# 		   "subject": self.subject,
-	# 		   "user": self.allocated_by,
-	# 		   "status": self.status,
-	# 		   "priority": self.priority,
-	# 		   "start_date": self.start_date,
-	# 		   "due_date": self.due_date,
-	# 		   "parent_task": self.parent_task
-	# 		}
-	# 		)
-	# 		meet.save()
-	# 	else:
-	# 		for row in meet.tasks:
-	# 			if row.task != self.name:
-	# 				frappe.throw("::::::111111:::::::")
-	# 				meet.append("tasks", {"task": self.name})
-	# 				meet.save()
-
 		
-
 	@frappe.whitelist()
 	def get_task_no(self):
 
