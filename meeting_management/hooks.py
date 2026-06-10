@@ -147,6 +147,12 @@ override_doctype_dashboards = {
 #	}
 # }
 
+doc_events = {
+    "ToDo": {
+        "after_insert": "meeting_management.meeting_management.doctype.snm_task.snm_task.update_snm_task_whatsapp_numbers_from_todo",
+    }
+}
+
 # Scheduled Tasks
 # ---------------
 

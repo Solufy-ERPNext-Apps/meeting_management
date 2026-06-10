@@ -6,7 +6,7 @@ import json
 from frappe.model.document import Document
 from frappe import _, throw
 from frappe.desk.form.assign_to import clear, close_all_assignments
-from frappe.utils import get_link_to_form
+from frappe.utils import get_link_to_form, get_url_to_form
 
 
 class ParentIsGroupError(frappe.ValidationError):
@@ -427,8 +427,31 @@ def add_multiple_tasks(data:str, parent:str):
 def on_doctype_update():
 	frappe.db.add_index("SNM Task", ["lft", "rgt"])
 
-import frappe
-from frappe.utils import get_url_to_form
+
+def update_snm_task_whatsapp_numbers_from_todo(doc, method=None):
+	if doc.reference_type != "SNM Task" or not doc.reference_name:
+		return
+	set_whatsapp_numbers_for_assigned_user(doc.reference_name, doc.allocated_to)
+def set_whatsapp_numbers_for_assigned_user(task, user):
+	if not task or not user:
+		return
+
+	user_contact = frappe.db.get_value("User",user,["mobile_no", "phone"],as_dict=True,)
+	numbers = []
+	if user_contact:
+		for fieldname in ("mobile_no", "phone"):
+			number = (user_contact.get(fieldname) or "").strip()
+
+			if number and number not in numbers:
+				numbers.append(number)
+
+	frappe.db.set_value(
+		"SNM Task",
+		task,
+		"whatsapp_number",
+		", ".join(numbers),
+		update_modified=False,
+	)
 
 
 def send_overdue_task_notifications():
