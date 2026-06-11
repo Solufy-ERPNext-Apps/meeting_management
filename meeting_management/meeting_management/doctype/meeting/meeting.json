@@ -1,5 +1,6 @@
 {
  "actions": [],
+ "allow_bulk_edit": 1,
  "allow_rename": 1,
  "autoname": "naming_series:",
  "creation": "2022-09-27 17:26:38.026501",
@@ -429,7 +430,7 @@
  "icon": "fa fa-handshake-o",
  "is_submittable": 1,
  "links": [],
- "modified": "2026-05-28 14:54:26.343351",
+ "modified": "2026-06-11 17:54:12.022018",
  "modified_by": "Administrator",
  "module": "Meeting Management",
  "name": "Meeting",
@@ -472,6 +473,17 @@
    "read": 1,
    "report": 1,
    "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Desk User",
    "share": 1,
    "write": 1
   }

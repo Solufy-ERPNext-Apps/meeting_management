@@ -20,3 +20,4 @@ class IntegrationTestSNMTask(IntegrationTestCase):
 	"""
 
 	pass
+	
