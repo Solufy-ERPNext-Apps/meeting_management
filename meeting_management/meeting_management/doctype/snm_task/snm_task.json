@@ -1,6 +1,5 @@
 {
  "actions": [],
- "allow_bulk_edit": 1,
  "allow_import": 1,
  "autoname": "SNM-Task-.department.-.YYYY.-.#####",
  "creation": "2026-03-23 17:28:04.991511",
@@ -153,8 +152,7 @@
   {
    "fieldname": "description",
    "fieldtype": "Text Editor",
-   "hidden": 1,
-   "label": "Task Description",
+   "label": "Remarks",
    "oldfieldname": "description",
    "oldfieldtype": "Text Editor",
    "print_width": "300px",
@@ -250,7 +248,7 @@
  "is_tree": 1,
  "links": [],
  "max_attachments": 5,
- "modified": "2026-06-10 19:08:07.451904",
+ "modified": "2026-06-12 11:32:55.877832",
  "modified_by": "Administrator",
  "module": "Meeting Management",
  "name": "SNM Task",
@@ -295,7 +293,6 @@
    "write": 1
   }
  ],
- "quick_entry": 1,
  "read_only": 1,
  "row_format": "Dynamic",
  "search_fields": "subject",

@@ -48,13 +48,14 @@ def get_my_assigned_count(filters= None):
 		)
 
 	return {
-		"value": count,
-		"fieldtype": "Int",
-		"route": ["List", "SNM Task"],
-		"route_options": {
-			"_assign": ["like", f"%{user}%"]
-		}
-	}
+    "value": count,
+    "fieldtype": "Int",
+    "route": ["List", "SNM Task"],
+    "route_options": {
+        "_assign": ["like", f"%{user}%"],
+        "owner": user,
+    }
+}
 # import frappe
 # import json
 

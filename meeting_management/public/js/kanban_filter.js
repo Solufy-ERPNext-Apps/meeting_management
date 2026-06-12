@@ -29,12 +29,18 @@ frappe.router.on('change', () => {
 
                     // Add dynamic user filter
                     cur_list.filter_area.add([
-                        [
-                            "SNM Task",
-                            "_assign",
-                            "like",
-                            "%" + current_user + "%"
-                        ]
+                       [
+							"SNM Task",
+							"_assign",
+							"like",
+							"%" + current_user + "%"
+						],
+						[
+							"SNM Task",
+							"owner",
+							"=",
+							current_user
+						]
                     ]);
 
                     // Refresh board
