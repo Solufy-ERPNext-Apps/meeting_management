@@ -35,7 +35,18 @@ fixtures=[
             ]
         ]
 
-}
+},
+# {
+#     "doctype": "Kanban Board",
+#         "filters": [
+#             [
+#                 "name", "in", [
+#                     "All Task","My Task"
+#                 ]
+#             ]
+#         ]
+
+# },
 ]
 
 after_migrate = "meeting_management.migrate.after_migrate"

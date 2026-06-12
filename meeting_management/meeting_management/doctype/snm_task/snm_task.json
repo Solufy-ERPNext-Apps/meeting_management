@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_import": 1,
- "autoname": "SNM-Task-.department.-.YYYY.-.#####",
+ "autoname": "SNM-Task-.abbreviation.-.YYYY.-.#####",
  "creation": "2026-03-23 17:28:04.991511",
  "default_view": "Kanban",
  "doctype": "DocType",
@@ -19,6 +19,7 @@
   "status",
   "priority",
   "department",
+  "abbreviation",
   "due_date",
   "parent_task",
   "completed_by",
@@ -240,7 +241,15 @@
   {
    "fieldname": "whatsapp_number",
    "fieldtype": "Small Text",
+   "hidden": 1,
    "label": "Whatsapp Number"
+  },
+  {
+   "fetch_from": "department.custom_abbreviation",
+   "fieldname": "abbreviation",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Abbreviation"
   }
  ],
  "icon": "fa fa-check",
@@ -248,7 +257,7 @@
  "is_tree": 1,
  "links": [],
  "max_attachments": 5,
- "modified": "2026-06-12 11:32:55.877832",
+ "modified": "2026-06-12 17:56:02.182319",
  "modified_by": "Administrator",
  "module": "Meeting Management",
  "name": "SNM Task",

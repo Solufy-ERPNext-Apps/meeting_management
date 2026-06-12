@@ -42,11 +42,22 @@
    "collapsible": 1,
    "indent": 0,
    "keep_closed": 0,
-   "label": "Task",
+   "label": "My Task",
    "link_to": "SNM Task",
    "link_type": "DocType",
    "show_arrow": 0,
    "type": "Link"
+  },
+  {
+   "child": 1,
+   "collapsible": 1,
+   "indent": 0,
+   "keep_closed": 0,
+   "label": "All Task",
+   "link_type": "URL",
+   "show_arrow": 0,
+   "type": "Link",
+   "url": "desk/snm-task/view/kanban/All%20Task"
   },
   {
    "child": 0,
@@ -90,42 +101,9 @@
    "link_type": "Page",
    "show_arrow": 0,
    "type": "Link"
-  },
-  {
-   "child": 0,
-   "collapsible": 1,
-   "indent": 0,
-   "keep_closed": 0,
-   "label": "Task",
-   "link_type": "DocType",
-   "show_arrow": 0,
-   "type": "Section Break"
-  },
-  {
-   "child": 1,
-   "collapsible": 1,
-   "indent": 0,
-   "keep_closed": 0,
-   "label": "My  Task",
-   "link_to": "SNM Task",
-   "link_type": "DocType",
-   "navigate_to_tab": "",
-   "show_arrow": 0,
-   "type": "Link"
-  },
-  {
-   "child": 1,
-   "collapsible": 1,
-   "indent": 0,
-   "keep_closed": 0,
-   "label": "All Task",
-   "link_type": "URL",
-   "show_arrow": 0,
-   "type": "Link",
-   "url": "desk/snm-task/view/kanban/All%20Task"
   }
  ],
- "modified": "2026-06-12 13:26:11.308444",
+ "modified": "2026-06-12 13:54:37.669197",
  "modified_by": "Administrator",
  "module": "Meeting Management",
  "name": "Meeting Management",
