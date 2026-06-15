@@ -3,7 +3,7 @@ import frappe
 import json
 from typing import Optional, Dict, Any
 @frappe.whitelist()
-def get_my_assigned_count(filters= None):
+def get_my_assigned_count(filters: str | list[dict[str, Any]] | None = None) -> int:
 	user = frappe.session.user
 
 	task_filters = []

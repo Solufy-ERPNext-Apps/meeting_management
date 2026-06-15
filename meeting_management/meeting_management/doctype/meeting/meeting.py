@@ -732,8 +732,7 @@ def create_follow_up_meeting(
 from frappe.model.mapper import get_mapped_doc
 
 @frappe.whitelist()
-def make_task(source_name, target_doc=None):
-
+def make_task(source_name: str, target_doc: str | dict | None = None):
     def postprocess(source, target):
         target.meeting = source.name
         target.allocated_by = frappe.session.user

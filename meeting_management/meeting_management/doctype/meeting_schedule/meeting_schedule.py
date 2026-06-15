@@ -152,19 +152,35 @@ def get_events(
 	filters = json.loads(filters)
 	from frappe.desk.calendar import get_event_conditions
 	conditions = get_event_conditions("Meeting Schedule", filters)
+	MeetingSchedule = frappe.qb.DocType("Meeting Schedule")
 
-	data = frappe.db.sql("""
-			select 
-				name, scheduled_from, scheduled_to, organisation
-			from 
-				`tabMeeting Schedule`
-			where
-				(scheduled_from <= %(end)s and scheduled_to >= %(start)s) {conditions}
-			""".format(conditions=conditions),
-				{
-					"start": start,
-					"end": end
-				}, as_dict=True, update={"allDay": 0})
+	# data = frappe.db.sql("""
+	# 		select 
+	# 			name, scheduled_from, scheduled_to, organisation
+	# 		from 
+	# 			`tabMeeting Schedule`
+	# 		where
+	# 			(scheduled_from <= %(end)s and scheduled_to >= %(start)s) {conditions}
+	# 		""".format(conditions=conditions),
+	# 			{
+	# 				"start": start,
+	# 				"end": end
+	# 			}, as_dict=True, update={"allDay": 0})
+	data = (
+		frappe.qb.from_(MeetingSchedule)
+		.select(
+			MeetingSchedule.name,
+			MeetingSchedule.scheduled_from,
+			MeetingSchedule.scheduled_to,
+			MeetingSchedule.organisation,
+		)
+		.where(
+			(MeetingSchedule.scheduled_from <= end)
+			& (MeetingSchedule.scheduled_to >= start)
+		)
+		.run(as_dict=True)
+	)
+
 
 	if not data:
 		return []
@@ -177,7 +193,12 @@ def get_events(
 	)			
 
 @frappe.whitelist()
-def get_party_details(party=None, party_type="Customer", ignore_permissions=False):
+def get_party_details(
+	party: str | None = None,
+	party_type: str = "Customer",
+	ignore_permissions: bool = False,
+) -> dict:
+
 
 	if not party:
 		return {}

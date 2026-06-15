@@ -14,6 +14,7 @@
   "is_group",
   "allocated_by",
   "username",
+  "created_by",
   "column_break0",
   "task_no",
   "status",
@@ -250,6 +251,13 @@
    "fieldtype": "Data",
    "hidden": 1,
    "label": "Abbreviation"
+  },
+  {
+   "fieldname": "created_by",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Created By",
+   "options": "User"
   }
  ],
  "icon": "fa fa-check",
@@ -257,7 +265,7 @@
  "is_tree": 1,
  "links": [],
  "max_attachments": 5,
- "modified": "2026-06-12 17:56:02.182319",
+ "modified": "2026-06-15 11:06:11.735565",
  "modified_by": "Administrator",
  "module": "Meeting Management",
  "name": "SNM Task",

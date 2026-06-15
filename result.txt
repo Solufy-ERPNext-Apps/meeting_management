@@ -1,123 +1,25 @@
-                             
-                             
-┌───────────────────────────┐
-│ 11 Blocking Code Findings │
-└───────────────────────────┘
-                                                                                                     
-  [36m[22m[24m  meeting_management/meeting_management/doctype/meeting_schedule/meeting_schedule.js[0m
-    ❯❱ frappe-semgrep-rules.rules.frappe-cur-frm-usage
-          [31m[1m[24m❰❰ Blocking ❱❱[0m
-          `cur_frm` is deprecated and can introduce buggy behaviour.
-                                                                    
-            5┆ cur_frm.set_query("contact", function() {
-            ⋮┆----------------------------------------
-            8┆ filters: { link_doctype: cur_frm.doc.party_type, link_name: cur_frm.doc.party }
-            ⋮┆----------------------------------------
-            8┆ filters: { link_doctype: cur_frm.doc.party_type, link_name: cur_frm.doc.party }
-                                                                                                     
-  [36m[22m[24m  meeting_management/meeting_management/doctype/meeting_schedule/meeting_schedule.py[0m
-    ❯❱ frappe-semgrep-rules.rules.security.frappe-sql-format-injection
-          [31m[1m[24m❰❰ Blocking ❱❱[0m
-          Detected use of '.format()' or f-string in a Frappe SQL call. This can lead to SQL injection. Use
-          parameterized queries instead.                                                                   
-                                                                                                           
-          156┆ data = frappe.db.sql("""
-          157┆            select
-          158┆                    name, scheduled_from, scheduled_to, organisation
-          159┆            from
-          160┆                    `tabMeeting Schedule`
-          161┆            where
-          162┆                    (scheduled_from <= %(end)s and scheduled_to >= %(start)s) {conditions}
-          163┆            """.format(conditions=conditions),
-          164┆                    {
-          165┆                            "start": start,
-             [hid 2 additional lines, adjust with --max-lines-per-finding] 
-   
-    ❯❱ frappe-semgrep-rules.rules.security.missing-argument-type-hint
-          [31m[1m[24m❰❰ Blocking ❱❱[0m
-          The argument 'ignore_permissions' in function 'get_party_details' is missing a type hint.
-                                                                                                   
-          179┆ @frappe.whitelist()
-          180┆ def get_party_details(party=None, party_type="Customer", ignore_permissions=False):
-          181┆
-          182┆    if not party:
-          183┆            return {}
-          184┆
-          185┆    if not frappe.db.exists(party_type, party):
-          186┆            frappe.throw(_("{0}: {1} does not exists").format(party_type, party))
-          187┆
-          188┆    return _get_party_details(party, party_type, ignore_permissions)
-            ⋮┆----------------------------------------
-    ❯❱ frappe-semgrep-rules.rules.security.missing-argument-type-hint
-          [31m[1m[24m❰❰ Blocking ❱❱[0m
-          The argument 'party' in function 'get_party_details' is missing a type hint.
-                                                                                      
-          179┆ @frappe.whitelist()
-          180┆ def get_party_details(party=None, party_type="Customer", ignore_permissions=False):
-          181┆
-          182┆    if not party:
-          183┆            return {}
-          184┆
-          185┆    if not frappe.db.exists(party_type, party):
-          186┆            frappe.throw(_("{0}: {1} does not exists").format(party_type, party))
-          187┆
-          188┆    return _get_party_details(party, party_type, ignore_permissions)
-            ⋮┆----------------------------------------
-    ❯❱ frappe-semgrep-rules.rules.security.missing-argument-type-hint
-          [31m[1m[24m❰❰ Blocking ❱❱[0m
-          The argument 'party_type' in function 'get_party_details' is missing a type hint.
-                                                                                           
-          179┆ @frappe.whitelist()
-          180┆ def get_party_details(party=None, party_type="Customer", ignore_permissions=False):
-          181┆
-          182┆    if not party:
-          183┆            return {}
-          184┆
-          185┆    if not frappe.db.exists(party_type, party):
-          186┆            frappe.throw(_("{0}: {1} does not exists").format(party_type, party))
-          187┆
-          188┆    return _get_party_details(party, party_type, ignore_permissions)
-                                                                                     
-  [36m[22m[24m  meeting_management/meeting_management/doctype/snm_task/snm_task.py[0m
-   ❯❯❱ frappe-semgrep-rules.rules.frappe-modifying-but-not-comitting-other-method
-          [31m[1m[24m❰❰ Blocking ❱❱[0m
-          self.update_subject is called from self.on_update, check if changes to self.subject are commited to
-          database.                                                                                          
-                                                                                                             
-           16┆ class SNMTask(Document):
-           17┆
-           18┆    def validate(self):
-           19┆            self.set_group_task()
-           20┆            self.update_depends_on()
-           21┆            self.validate_parent_is_group()
-           22┆            self.validate_due_date()
-           23┆            self.get_dept()
-           24┆
-           25┆    def before_insert(self):
-             [hid 227 additional lines, adjust with --max-lines-per-finding] 
+                            
+                            
+┌──────────────────────────┐
+│ 3 Blocking Code Findings │
+└──────────────────────────┘
                                                 
   [36m[22m[24m  meeting_management/migrate.py[0m
     ❯❱ frappe-semgrep-rules.rules.security.frappe-security-file-traversal
-          [31m[1m[24m❰❰ Blocking ❱❱[0m
           Detected the file system access. This code should be manually audited by security team to avoid file
           traversal issues.                                                                                   
                                                                                                               
-           20┆ with open(os.path.join(path, file), "r") as f:
+           51┆ with open(os.path.join(path, file)) as f:
             ⋮┆----------------------------------------
-           37┆ with open(os.path.join(path, file), "r") as f:
+           73┆ with open(os.path.join(path, file)) as f:
                            
   [36m[22m[24m  setup.py[0m
     ❯❱ frappe-semgrep-rules.rules.security.frappe-security-file-traversal
-          [31m[1m[24m❰❰ Blocking ❱❱[0m
           Detected the file system access. This code should be manually audited by security team to avoid file
           traversal issues.                                                                                   
                                                                                                               
             3┆ with open("requirements.txt") as f:
                             
   BLOCKING CODE RULES FIRED:
-    frappe-semgrep-rules.rules.frappe-cur-frm-usage
-    frappe-semgrep-rules.rules.frappe-modifying-but-not-comitting-other-method
     frappe-semgrep-rules.rules.security.frappe-security-file-traversal
-    frappe-semgrep-rules.rules.security.frappe-sql-format-injection
-    frappe-semgrep-rules.rules.security.missing-argument-type-hint
 
