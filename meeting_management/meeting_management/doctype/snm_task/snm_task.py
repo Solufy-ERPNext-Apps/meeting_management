@@ -25,6 +25,7 @@ class SNMTask(Document):
 		self.update_snm_description()
 		self.update_child_description()
 		self.update_subject()
+		
 	def before_insert(self):
 		self.get_task_no()
 

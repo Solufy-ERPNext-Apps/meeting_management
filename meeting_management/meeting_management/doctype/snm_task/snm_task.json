@@ -249,7 +249,6 @@
    "fetch_from": "department.custom_abbreviation",
    "fieldname": "abbreviation",
    "fieldtype": "Data",
-   "hidden": 1,
    "label": "Abbreviation"
   },
   {
@@ -265,7 +264,7 @@
  "is_tree": 1,
  "links": [],
  "max_attachments": 5,
- "modified": "2026-06-15 11:06:11.735565",
+ "modified": "2026-06-15 14:37:16.794270",
  "modified_by": "Administrator",
  "module": "Meeting Management",
  "name": "SNM Task",
@@ -315,6 +314,7 @@
  "search_fields": "subject",
  "show_name_in_global_search": 1,
  "show_preview_popup": 1,
+ "show_title_field_in_link": 1,
  "sort_field": "creation",
  "sort_order": "DESC",
  "states": [],
