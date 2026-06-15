@@ -14,6 +14,7 @@
   "is_group",
   "allocated_by",
   "username",
+  "created_by",
   "column_break0",
   "task_no",
   "status",
@@ -72,6 +73,7 @@
   },
   {
    "allow_in_quick_entry": 1,
+   "default": "User",
    "fieldname": "allocated_by",
    "fieldtype": "Link",
    "hidden": 1,
@@ -228,7 +230,6 @@
   {
    "fieldname": "department",
    "fieldtype": "Link",
-   "hidden": 1,
    "label": "Department",
    "options": "Department"
   },
@@ -248,8 +249,14 @@
    "fetch_from": "department.custom_abbreviation",
    "fieldname": "abbreviation",
    "fieldtype": "Data",
-   "hidden": 1,
    "label": "Abbreviation"
+  },
+  {
+   "fieldname": "created_by",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Created By",
+   "options": "User"
   }
  ],
  "icon": "fa fa-check",
@@ -257,7 +264,7 @@
  "is_tree": 1,
  "links": [],
  "max_attachments": 5,
- "modified": "2026-06-12 17:56:02.182319",
+ "modified": "2026-06-15 16:00:55.610332",
  "modified_by": "Administrator",
  "module": "Meeting Management",
  "name": "SNM Task",
@@ -307,9 +314,10 @@
  "search_fields": "subject",
  "show_name_in_global_search": 1,
  "show_preview_popup": 1,
+ "show_title_field_in_link": 1,
  "sort_field": "creation",
  "sort_order": "DESC",
  "states": [],
- "title_field": "username",
+ "title_field": "subject",
  "track_seen": 1
 }

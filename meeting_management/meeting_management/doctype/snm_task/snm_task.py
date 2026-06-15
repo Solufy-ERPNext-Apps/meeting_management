@@ -7,7 +7,7 @@ from frappe.model.document import Document
 from frappe import _, throw
 from frappe.desk.form.assign_to import clear, close_all_assignments
 from frappe.utils import get_link_to_form, get_url_to_form
-
+from frappe.desk.form.assign_to import add as add_assignment
 
 class ParentIsGroupError(frappe.ValidationError):
 	pass
@@ -24,7 +24,7 @@ class SNMTask(Document):
 		self.update_description()
 		self.update_snm_description()
 		self.update_child_description()
-
+		self.update_subject()
 	def before_insert(self):
 		self.get_task_no()
 
@@ -35,7 +35,7 @@ class SNMTask(Document):
 		self.create_child_tasks()
 		self.populate_depends_on()
 		self.unassign_todo()
-		self.update_subject()
+		# self.update_subject()
 
 	def validate_due_date(self):
 		if not self.due_date:
@@ -89,6 +89,7 @@ class SNMTask(Document):
 						"description": self.description,
 						"priority": self.priority,
 						"status":self.status,
+						"parent_task": self.parent_task,
 					}
 				)
 
@@ -109,6 +110,8 @@ class SNMTask(Document):
 		depends_on_tasks = ""
 
 		for d in self.depends_on:
+			if not d.parent_task:
+				d.parent_task = self.name
 
 			if d.task and d.task not in depends_on_tasks:
 				depends_on_tasks += d.task + ","
@@ -141,7 +144,8 @@ class SNMTask(Document):
 				"created_from_parent": 1,
 				"start_date": row.start_date,
 				"due_date": row.due_date,
-				"description": row.description
+				"description": row.description,
+				"created_by":row.user_id
 			})
 
 			child_task.flags.ignore_child_creation = True
@@ -150,7 +154,17 @@ class SNMTask(Document):
 
 			# Update only current row
 			row.db_set("task", child_task.name)
-
+			if row.user:
+				todo = frappe.new_doc("ToDo")
+				todo.assigned_by = frappe.session.user
+				todo.reference_type = "SNM Task"
+				todo.reference_name = child_task.name
+				todo.priority = child_task.priority
+				todo.description = child_task.subject
+				todo.date = child_task.due_date
+				todo.allocated_to = row.user
+				todo.status = "Open"
+				todo.insert(ignore_permissions=True)
 	def update_description(self):
 		if not self.meeting:
 			return
@@ -277,7 +291,9 @@ class SNMTask(Document):
 
 		# Set only if department found
 		if dept:
+			abr=frappe.db.get_value("Department",dept,"custom_abbreviation")
 			self.department = dept
+			self.abbreviation=abr
 		
 @frappe.whitelist()
 def get_task_assignees(task:str):
