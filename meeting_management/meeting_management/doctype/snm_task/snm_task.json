@@ -9,30 +9,31 @@
  "engine": "InnoDB",
  "field_order": [
   "subject",
-  "type",
-  "start_date",
+  "status",
+  "parent_task",
   "is_group",
   "allocated_by",
   "username",
   "created_by",
   "column_break0",
   "task_no",
-  "status",
+  "start_date",
+  "meeting",
   "priority",
   "department",
   "abbreviation",
-  "due_date",
-  "parent_task",
   "completed_by",
   "completed_on",
   "created_from_parent",
+  "column_break_ilsw",
+  "type",
+  "due_date",
   "sb_details",
   "description",
   "whatsapp_number",
   "sb_depends_on",
   "depends_on",
   "depends_on_tasks",
-  "meeting",
   "lft",
   "rgt",
   "old_parent",
@@ -99,7 +100,6 @@
    "bold": 1,
    "fieldname": "status",
    "fieldtype": "Select",
-   "hidden": 1,
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Status",
@@ -156,10 +156,9 @@
    "fieldname": "description",
    "fieldtype": "Text Editor",
    "label": "Remarks",
+   "max_height": "80px",
    "oldfieldname": "description",
-   "oldfieldtype": "Text Editor",
-   "print_width": "300px",
-   "width": "300px"
+   "oldfieldtype": "Text Editor"
   },
   {
    "fieldname": "sb_depends_on",
@@ -230,6 +229,7 @@
   {
    "fieldname": "department",
    "fieldtype": "Link",
+   "hidden": 1,
    "label": "Department",
    "options": "Department"
   },
@@ -237,7 +237,8 @@
    "fieldname": "meeting",
    "fieldtype": "Link",
    "label": "Meeting Reference",
-   "options": "Meeting"
+   "options": "Meeting",
+   "read_only": 1
   },
   {
    "fieldname": "whatsapp_number",
@@ -249,6 +250,7 @@
    "fetch_from": "department.custom_abbreviation",
    "fieldname": "abbreviation",
    "fieldtype": "Data",
+   "hidden": 1,
    "label": "Abbreviation"
   },
   {
@@ -257,6 +259,10 @@
    "hidden": 1,
    "label": "Created By",
    "options": "User"
+  },
+  {
+   "fieldname": "column_break_ilsw",
+   "fieldtype": "Column Break"
   }
  ],
  "icon": "fa fa-check",
@@ -264,7 +270,7 @@
  "is_tree": 1,
  "links": [],
  "max_attachments": 5,
- "modified": "2026-06-15 16:00:55.610332",
+ "modified": "2026-06-16 11:34:26.925393",
  "modified_by": "Administrator",
  "module": "Meeting Management",
  "name": "SNM Task",
