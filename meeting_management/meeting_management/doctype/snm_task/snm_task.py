@@ -16,6 +16,7 @@ class ParentIsGroupError(frappe.ValidationError):
 class SNMTask(Document):
 
 	def validate(self):
+		self.assign_user()
 		self.set_group_task()
 		self.update_depends_on()
 		self.validate_parent_is_group()
@@ -38,7 +39,78 @@ class SNMTask(Document):
 		self.populate_depends_on()
 		self.unassign_todo()
 		# self.update_subject()
+	# def assign_user(self):
+	# 	for row in self.assigned_users:
+	# 		if not row.user:
+	# 			continue
 
+	# 		exists = frappe.db.exists(
+	# 			"ToDo",
+	# 			{
+	# 				"reference_type": self.doctype,
+	# 				"reference_name": self.name,
+	# 				"allocated_to": row.user,
+	# 				"status": "Open",
+	# 			},
+	# 		)
+
+	# 		if exists:
+	# 			continue
+
+	# 		todo = frappe.get_doc(
+	# 			{
+	# 				"doctype": "ToDo",
+	# 				"allocated_to": row.user,
+	# 				"reference_type": self.doctype,
+	# 				"reference_name": self.name,
+	# 				"description": self.subject or self.name,
+	# 				"status": "Open",
+	# 			}
+	# 		)
+	# 		todo.insert(ignore_permissions=True)
+	def assign_user(self):
+		current_users = [row.user for row in self.assigned_users if row.user]
+
+		# Create ToDo for selected users
+		for user in current_users:
+			exists = frappe.db.exists(
+				"ToDo",
+				{
+					"reference_type": self.doctype,
+					"reference_name": self.name,
+					"allocated_to": user,
+					"status": "Open",
+				},
+			)
+
+			if exists:
+				continue
+
+			frappe.get_doc(
+				{
+					"doctype": "ToDo",
+					"allocated_to": user,
+					"reference_type": self.doctype,
+					"reference_name": self.name,
+					"description": self.subject or self.name,
+					"status": "Open",
+				}
+			).insert(ignore_permissions=True)
+
+		# Remove ToDo if user removed from assigned_users
+		existing_todos = frappe.get_all(
+			"ToDo",
+			filters={
+				"reference_type": self.doctype,
+				"reference_name": self.name,
+				"status": "Open",
+			},
+			fields=["name", "allocated_to"],
+		)
+
+		for todo in existing_todos:
+			if todo.allocated_to not in current_users:
+				frappe.delete_doc("ToDo", todo.name, ignore_permissions=True)
 	def validate_due_date(self):
 		if not self.due_date:
 			return

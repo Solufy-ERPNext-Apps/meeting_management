@@ -250,9 +250,9 @@ from typing import Any
 @frappe.whitelist()
 @frappe.whitelist()
 def get_events(
-    start: str,
-    end: str,
-    filters: dict[str, Any] | None = None
+	start: str,
+	end: str,
+	filters: dict[str, Any] | None = None
 ) -> list:
 	"""Returns events for Gantt / Calendar view rendering.
 	:param start: Start date-time.
@@ -707,12 +707,12 @@ def create_google_meet(event_name:str):
 
 @frappe.whitelist()
 def create_follow_up_meeting(
-    parent_meeting: str,
-    subject: str,
-    description: str | None = None,
-    follow_up_date: str | None = None,
-    contact_person: str | None = None,
-    follow_end_date: str | None = None,
+	parent_meeting: str,
+	subject: str,
+	description: str | None = None,
+	follow_up_date: str | None = None,
+	contact_person: str | None = None,
+	follow_end_date: str | None = None,
 ) -> str:
 
 	# Fetch Parent Meeting
@@ -743,28 +743,29 @@ from frappe.model.mapper import get_mapped_doc
 
 @frappe.whitelist()
 def make_task(source_name, target_doc=None):
+	def postprocess(source, target):
+		# user = frappe.get_doc("User", frappe.session.user)
+		target.meeting = source.name
+		target.allocated_by = frappe.session.user
+		# target.username = user.full_name
 
-    def postprocess(source, target):
-        target.meeting = source.name
-        target.allocated_by = frappe.session.user
+		# Optional field mapping
+		if hasattr(target, "subject"):
+			target.subject = source.meeting_title or source.name
 
-        # Optional field mapping
-        if hasattr(target, "subject"):
-            target.subject = source.meeting_title or source.name
+		if hasattr(target, "description"):
+			target.description = source.discussion or ""
 
-        if hasattr(target, "description"):
-            target.description = source.discussion or ""
+	doc = get_mapped_doc(
+		"Meeting",
+		source_name,
+		{
+			"Meeting": {
+				"doctype": "SNM Task"
+			}
+		},
+		target_doc,
+		postprocess
+	)
 
-    doc = get_mapped_doc(
-        "Meeting",
-        source_name,
-        {
-            "Meeting": {
-                "doctype": "SNM Task"
-            }
-        },
-        target_doc,
-        postprocess
-    )
-
-    return doc
+	return doc

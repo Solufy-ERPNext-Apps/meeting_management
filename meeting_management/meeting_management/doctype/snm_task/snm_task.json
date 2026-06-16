@@ -28,6 +28,7 @@
   "column_break_ilsw",
   "type",
   "due_date",
+  "assigned_users",
   "sb_details",
   "description",
   "whatsapp_number",
@@ -263,6 +264,12 @@
   {
    "fieldname": "column_break_ilsw",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "assigned_users",
+   "fieldtype": "Table MultiSelect",
+   "label": "Assigned Users",
+   "options": "SNM Task Assigned User"
   }
  ],
  "icon": "fa fa-check",
@@ -270,7 +277,7 @@
  "is_tree": 1,
  "links": [],
  "max_attachments": 5,
- "modified": "2026-06-16 14:19:57.408102",
+ "modified": "2026-06-16 18:19:50.998801",
  "modified_by": "Administrator",
  "module": "Meeting Management",
  "name": "SNM Task",
