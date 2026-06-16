@@ -23,8 +23,10 @@ class SNMTask(Document):
 		self.get_dept()
 		self.update_description()
 		self.update_snm_description()
-		self.update_child_description()
+		# self.update_child_description()
 		self.update_subject()
+	def on_update(self):
+		self.update_child_description()
 	def before_insert(self):
 		self.get_task_no()
 
