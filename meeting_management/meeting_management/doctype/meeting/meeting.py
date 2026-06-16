@@ -82,7 +82,7 @@ class Meeting(Document):
 		if user_name:
 			discussed = "<strong><a href="+url+">"+self.name+"</a>: </strong>"+ user_name + " Met "+ str(self.contact_p) + " On "+ self.meeting_from +"<br>"
 		else:
-			discussed = "<strong><a href="+url+">"+self.name+"</a>: </strong>"+ frappe.session.user + " Met "+ str(self.contact_p)+ " On "+ self.meeting_from +"<br>" + self.discussion.replace('\n', "<br>")
+			discussed = "<strong><a href="+url+">"+self.name+"</a>: </strong>"+ frappe.session.user + " Met "+ str(self.contact_p)+ " On "+ self.meeting_from +"<br>"
 
 		cm = frappe.new_doc("Comment")
 		cm.subject = self.name
