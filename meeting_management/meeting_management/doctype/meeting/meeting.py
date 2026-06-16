@@ -76,10 +76,11 @@ class Meeting(Document):
 
 	def on_submit(self):	
 		self.create_event()
+		self.create_agenda()
 		user_name = frappe.db.get_value("Employee",{"user_id":frappe.session.user},"employee_name")
 		url = get_url_to_form("Meeting", self.name)
 		if user_name:
-			discussed = "<strong><a href="+url+">"+self.name+"</a>: </strong>"+ user_name + " Met "+ str(self.contact_p) + " On "+ self.meeting_from +"<br>" + self.discussion.replace('\n', "<br>")
+			discussed = "<strong><a href="+url+">"+self.name+"</a>: </strong>"+ user_name + " Met "+ str(self.contact_p) + " On "+ self.meeting_from +"<br>"
 		else:
 			discussed = "<strong><a href="+url+">"+self.name+"</a>: </strong>"+ frappe.session.user + " Met "+ str(self.contact_p)+ " On "+ self.meeting_from +"<br>" + self.discussion.replace('\n', "<br>")
 
@@ -106,7 +107,16 @@ class Meeting(Document):
 			if not target_lead.mobile_no:
 				target_lead.mobile_no = self.mobile_no
 			target_lead.save(ignore_permissions=True)
-			
+	def create_agenda(self):
+		for row in self.agenda_details:
+			if row.write_agenda and row.has_task:
+				self.append("tasks", {
+					"subject": row.write_agenda,
+					"user_id":frappe.session.user,
+					"start_date":self.meeting_from,
+					"due_date":self.meeting_to
+				})
+		self.save(ignore_permissions=True)
 	@frappe.whitelist()
 	def get_user(self):
 		if self.user_type:
@@ -147,8 +157,8 @@ class Meeting(Document):
 		for row in self.tasks:
 			if not row.task:
 				return
-			if row.has_value_changed("desctiption"):
-				frappe.db.set_value("SNM Task", row.task, "description", self.description)
+			# if row.has_value_changed("desctiption"):
+			# 	frappe.db.set_value("SNM Task", row.task, "description", self.description)
 	def create_event(self):
 
 		# Create Main Event
@@ -157,7 +167,7 @@ class Meeting(Document):
 		main_event.event_type = "Private"
 		main_event.starts_on = self.meeting_from
 		main_event.ends_on = self.meeting_to
-		main_event.description = self.discussion
+		# main_event.description = self.discussion
 		main_event.save(ignore_permissions=True)
 
 		# -----------------------------

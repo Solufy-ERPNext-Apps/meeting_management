@@ -168,7 +168,7 @@
   {
    "fieldname": "depends_on",
    "fieldtype": "Table",
-   "label": "Tasks",
+   "label": "Sub Task",
    "options": "Child Tasks"
   },
   {
@@ -270,7 +270,7 @@
  "is_tree": 1,
  "links": [],
  "max_attachments": 5,
- "modified": "2026-06-16 11:34:26.925393",
+ "modified": "2026-06-16 14:19:57.408102",
  "modified_by": "Administrator",
  "module": "Meeting Management",
  "name": "SNM Task",
