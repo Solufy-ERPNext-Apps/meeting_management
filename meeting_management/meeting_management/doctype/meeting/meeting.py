@@ -229,7 +229,7 @@ class Meeting(Document):
 							day=current_date.day
 						)
 
-						recurring_event.description = self.discussion
+						# recurring_event.description = self.discussion
 
 						recurring_event.save(ignore_permissions=True)
 
@@ -748,13 +748,19 @@ def make_task(source_name, target_doc=None):
 		target.meeting = source.name
 		target.allocated_by = frappe.session.user
 		# target.username = user.full_name
+		if hasattr(target, "username"):
+			target.username = frappe.db.get_value(
+				"User",
+				frappe.session.user,
+				"full_name"
+			)
 
 		# Optional field mapping
 		if hasattr(target, "subject"):
 			target.subject = source.meeting_title or source.name
 
-		if hasattr(target, "description"):
-			target.description = source.discussion or ""
+		# if hasattr(target, "description"):
+		# 	target.description = source.discussion or ""
 
 	doc = get_mapped_doc(
 		"Meeting",
