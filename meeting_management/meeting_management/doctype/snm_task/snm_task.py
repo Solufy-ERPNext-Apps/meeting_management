@@ -426,6 +426,51 @@ def check_if_child_exists(name:str):
 
 
 @frappe.whitelist()
+def get_kanban_subtasks(parent_tasks: str | list[str]) -> dict:
+	"""Compatibility endpoint for older loaded SNM Task Kanban assets."""
+	if not frappe.has_permission("SNM Task", "read"):
+		frappe.throw(_("Not permitted"), frappe.PermissionError)
+
+	if isinstance(parent_tasks, str):
+		parent_tasks = json.loads(parent_tasks or "[]")
+
+	parent_tasks = list(dict.fromkeys(parent_tasks or []))
+	if not parent_tasks:
+		return {}
+
+	grouped_tasks = {}
+	parents_to_fetch = parent_tasks
+	visited = set(parent_tasks)
+
+	while parents_to_fetch:
+		children = frappe.get_list(
+			"SNM Task",
+			filters={"parent_task": ["in", parents_to_fetch]},
+			fields=[
+				"name",
+				"subject",
+				"status",
+				"priority",
+				"due_date",
+				"parent_task",
+			],
+			order_by="task_no asc, creation asc",
+			limit_page_length=0,
+		)
+
+		next_parents = []
+		for child in children:
+			grouped_tasks.setdefault(child.parent_task, []).append(child)
+			if child.name not in visited:
+				visited.add(child.name)
+				next_parents.append(child.name)
+
+		parents_to_fetch = next_parents
+
+	return grouped_tasks
+
+
+@frappe.whitelist()
 def get_children(
     doctype: str,
     parent: str,
