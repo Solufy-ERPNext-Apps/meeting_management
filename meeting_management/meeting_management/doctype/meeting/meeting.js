@@ -82,18 +82,85 @@ frappe.ui.form.on('Meeting', {
 	// 	"color": "#fff"
 	// });
 	// }
-if (!frm.is_new() && frm.doc.docstatus === 1) {
+	if (!frm.is_new() && frm.doc.docstatus === 1) {
 
-            frm.add_custom_button(__("Create Task"), () => {
+    frm.add_custom_button(__("Create Task"), () => {
 
-                frappe.model.open_mapped_doc({
-                    method: "meeting_management.meeting_management.doctype.meeting.meeting.make_task",
-                    frm: frm
+        let d = new frappe.ui.Dialog({
+            title: "Create Task",
+            fields: [
+                {
+                    fieldname: "subject",
+                    fieldtype: "Data",
+                    label: "Task Subject",
+                    reqd: 1
+                },
+                {
+                    fieldname: "description",
+                    fieldtype: "Small Text",
+                    label: "Description"
+                },
+				 {
+                    fieldname: "start_date",
+                    fieldtype: "Date",
+                    label: "Start Date"
+                },
+                {
+                    fieldname: "due_date",
+                    fieldtype: "Date",
+                    label: "Due Date"
+                },
+				//  {
+                //     fieldname: "assigned_users",
+                //     fieldtype: "Table",
+                //     label: "Assigned Users",
+                //     cannot_add_rows: false,
+                //     in_place_edit: true,
+                //     data: [],
+                //     fields: [
+                //         {
+                //             fieldtype: "Link",
+                //             fieldname: "user",
+                //             options: "User",
+                //             label: "User",
+                //             reqd: 1
+                //         }
+                //     ]
+                // },
+                {
+                    fieldname: "assigned_to",
+                    fieldtype: "Link",
+                    options: "User",
+                    label: "Allocated By",
+					default:frappe.session.user,
+					read_only:1
+                }
+            ],
+            primary_action_label: "Create",
+            primary_action(values) {
+
+                frappe.call({
+                    method: "meeting_management.meeting_management.doctype.meeting.meeting.create_task_from_dialog",
+                    args: {
+                        meeting: frm.doc.name,
+                        data: values
+                    },
+                    callback: function (r) {
+                        if (!r.exc) {
+                            frappe.msgprint(__("Task Created Successfully"));
+                            frm.reload_doc();
+                            d.hide();
+                        }
+                    }
                 });
 
-            }, __("Create"));
+            }
+        });
 
-        }
+        d.show();
+
+    }, __("Create"));
+}
 	if (!frm.is_new() && frm.doc.docstatus === 1) {
 		frm.add_custom_button(__("Follow Up"), () => {
 

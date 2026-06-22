@@ -3,7 +3,7 @@ import frappe
 import json
 from typing import Optional, Dict, Any
 @frappe.whitelist()
-def get_my_assigned_count(filters= None):
+def get_my_assigned_count(filters: str | list | None = None):
 	user = frappe.session.user
 
 	task_filters = []
@@ -56,52 +56,3 @@ def get_my_assigned_count(filters= None):
         "owner": user,
     }
 }
-# import frappe
-# import json
-
-# @frappe.whitelist()
-# def get_my_assigned_count(filters=None):
-
-#     user = frappe.session.user
-
-#     # ✅ GET FILTERS FROM NUMBER CARD
-#     task_filters = {}
-
-#     if filters:
-#         filters = json.loads(filters)
-
-#         for f in filters:
-#             field = f[1]
-#             value = f[3]
-
-#             task_filters[field] = value
-
-#     # ✅ GET FILTERED SNM TASKS
-#     task_names = frappe.get_all(
-#         "SNM Task",
-#         filters=task_filters,
-#         pluck="name"
-#     )
-
-#     # ✅ COUNT ONLY CURRENT USER TODO
-#     count = frappe.db.count(
-#         "ToDo",
-#         filters={
-#             "reference_type": "SNM Task",
-#             "reference_name": ["in", task_names],
-#             "allocated_to": user
-#         }
-#     )
-
-#     return {
-#         "value": count,
-#         "fieldtype": "Int",
-
-#         # ✅ OPEN FILTERED SNM TASK LIST
-#         "route_options": {
-#             "assigned_to": user,
-#             **task_filters
-#         },
-
-#         "route": ["List", "SNM Task"]
-#     }

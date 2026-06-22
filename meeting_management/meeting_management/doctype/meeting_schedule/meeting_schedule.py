@@ -138,47 +138,59 @@ def make_meeting(source_name: str, target_doc: dict | None = None):
 	return doclist
 from typing import Optional
 frappe.whitelist()
+import json
+import frappe
+from typing import Optional
+from frappe.query_builder import DocType
+
+
 def get_events(
 	start: str,
 	end: str,
-	filters: Optional[str] = None
+	filters: Optional[str] = None,
 ):
+	filters = json.loads(filters or "{}")
 
-	"""Returns events for Gantt / Calendar view rendering.
-	:param start: Start date-time.
-	:param end: End date-time.
-	:param filters: Filters (JSON).
-	"""
-	filters = json.loads(filters)
-	from frappe.desk.calendar import get_event_conditions
-	conditions = get_event_conditions("Meeting Schedule", filters)
+	MeetingSchedule = DocType("Meeting Schedule")
 
-	data = frappe.db.sql("""
-			select 
-				name, scheduled_from, scheduled_to, organisation
-			from 
-				`tabMeeting Schedule`
-			where
-				(scheduled_from <= %(end)s and scheduled_to >= %(start)s) {conditions}
-			""".format(conditions=conditions),
-				{
-					"start": start,
-					"end": end
-				}, as_dict=True, update={"allDay": 0})
+	data = (
+		frappe.qb.from_(MeetingSchedule)
+		.select(
+			MeetingSchedule.name,
+			MeetingSchedule.scheduled_from,
+			MeetingSchedule.scheduled_to,
+			MeetingSchedule.organisation,
+		)
+		.where(MeetingSchedule.scheduled_from <= end)
+		.where(MeetingSchedule.scheduled_to >= start)
+	).run(as_dict=True)
 
 	if not data:
 		return []
-		
-	data = [x.name for x in data]
 
-	return frappe.db.get_list("Meeting Schedule",
-		{ "name": ("in", data), "docstatus":1},
-		["name", "scheduled_from", "scheduled_to", "organization"]
-	)			
+	names = [d.name for d in data]
+
+	return frappe.get_all(
+		"Meeting Schedule",
+		filters={
+			"name": ["in", names],
+			"docstatus": 1,
+		},
+		fields=[
+			"name",
+			"scheduled_from",
+			"scheduled_to",
+			"organization",
+		],
+	)		
 
 @frappe.whitelist()
-def get_party_details(party=None, party_type="Customer", ignore_permissions=False):
-
+@frappe.whitelist()
+def get_party_details(
+    party: str | None = None,
+    party_type: str = "Customer",
+    ignore_permissions: bool = False,
+):
 	if not party:
 		return {}
 
