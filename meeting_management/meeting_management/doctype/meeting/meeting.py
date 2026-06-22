@@ -264,6 +264,7 @@ class Meeting(Document):
 	# 	# event.custom_contact_person=self.contact_p
 	# 	event.description=self.discussion
 	# 	return event.name
+
 	
 from typing import Any
 @frappe.whitelist()
