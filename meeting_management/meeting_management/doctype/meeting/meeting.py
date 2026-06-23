@@ -266,7 +266,9 @@ class Meeting(Document):
 	# 	return event.name
 
 	
+
 from typing import Any
+
 @frappe.whitelist()
 def get_events(
 	start: str,
