@@ -958,6 +958,7 @@ class SNMTask(Document):
                 "due_date": self.due_date,
                 "parent_task": self.parent_task,
                 "description": self.description,
+                "is_meeting_task": self.is_meeting_task,
             },
         )
 

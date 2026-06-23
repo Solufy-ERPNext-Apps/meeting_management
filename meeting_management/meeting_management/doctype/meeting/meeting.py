@@ -30,6 +30,7 @@ import datetime
 from frappe.utils import get_datetime
 from datetime import timedelta
 class Meeting(Document):
+	
 	def get_recurrence_rrule(self):
 		checked_rows = [row for row in self.recurring_meeting if row.check]
 		if not checked_rows:
@@ -116,7 +117,8 @@ class Meeting(Document):
 	# 				"subject": row.write_agenda,
 	# 				"user_id":frappe.session.user,
 	# 				"start_date":self.meeting_from,
-	# 				"due_date":self.meeting_to
+	# 				"due_date":self.meeting_to,
+					# "is_meetin_task":1
 	# 			})
 	# 	self.save(ignore_permissions=True)
 	def create_agenda(self):
@@ -149,8 +151,7 @@ class Meeting(Document):
 					"start_date": self.meeting_from,
 					"due_date": self.meeting_to,
 				}).insert(ignore_permissions=True)
-		# for task_row in self.tasks:
-		# 	task_row.db_set("is_meeting_task", 1, update_modified=False)
+	
 	# def create_agenda(self):
 	# 	if not self.agenda_details:
 	# 		return
