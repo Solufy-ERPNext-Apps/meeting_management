@@ -71,96 +71,94 @@ frappe.ui.form.on('Meeting', {
 				}
 			}
 		};
-	// 	if (!frm.doc.__islocal && frm.doc.docstatus === 1) {
-	// frm.add_custom_button(__("Create Task"), () => {
 
-	// frappe.new_doc("SNM Task", {
-	// 	meeting: frm.doc.name
-	// });
-	// }).css({
-	// 	"background-color": "black",
-	// 	"color": "#fff"
-	// });
-	// }
-	if (!frm.is_new() && frm.doc.docstatus === 1) {
+//     frm.add_custom_button(__("Create Task"), () => {
 
-    frm.add_custom_button(__("Create Task"), () => {
+//         let d = new frappe.ui.Dialog({
+//             title: "Create Task",
+//             fields: [
+//                 {
+//                     fieldname: "subject",
+//                     fieldtype: "Data",
+//                     label: "Task Subject",
+//                     reqd: 1
+//                 },
+//                 {
+//                     fieldname: "description",
+//                     fieldtype: "Small Text",
+//                     label: "Description"
+//                 },
+// 				 {
+//                     fieldname: "start_date",
+//                     fieldtype: "Date",
+//                     label: "Start Date"
+//                 },
+//                 {
+//                     fieldname: "due_date",
+//                     fieldtype: "Date",
+//                     label: "Due Date"
+//                 },
+//                 {
+//                     fieldname: "assigned_users",
+//                     fieldtype: "MultiSelectPills",
+//                     label: "Assigned Users",
+//                     get_data: function(txt) {
+//                         return frappe.db.get_link_options("User", txt, {
+//                             enabled: 1
+//                         });
+//                     }
+//                 },
+// 				//  {
+//                 //     fieldname: "assigned_users",
+//                 //     fieldtype: "Table",
+//                 //     label: "Assigned Users",
+//                 //     cannot_add_rows: false,
+//                 //     in_place_edit: true,
+//                 //     data: [],
+//                 //     fields: [
+//                 //         {
+//                 //             fieldtype: "Link",
+//                 //             fieldname: "user",
+//                 //             options: "User",
+//                 //             label: "User",
+//                 //             reqd: 1
+//                 //         }
+//                 //     ]
+//                 // },
+//                 {
+//                     fieldname: "assigned_to",
+//                     fieldtype: "Link",
+//                     options: "User",
+//                     label: "Allocated By",
+// 					default:frappe.session.user,
+// 					read_only:1
+//                 }
+//             ],
+//             primary_action_label: "Create",
+//             primary_action(values) {
 
-        let d = new frappe.ui.Dialog({
-            title: "Create Task",
-            fields: [
-                {
-                    fieldname: "subject",
-                    fieldtype: "Data",
-                    label: "Task Subject",
-                    reqd: 1
-                },
-                {
-                    fieldname: "description",
-                    fieldtype: "Small Text",
-                    label: "Description"
-                },
-				 {
-                    fieldname: "start_date",
-                    fieldtype: "Date",
-                    label: "Start Date"
-                },
-                {
-                    fieldname: "due_date",
-                    fieldtype: "Date",
-                    label: "Due Date"
-                },
-				//  {
-                //     fieldname: "assigned_users",
-                //     fieldtype: "Table",
-                //     label: "Assigned Users",
-                //     cannot_add_rows: false,
-                //     in_place_edit: true,
-                //     data: [],
-                //     fields: [
-                //         {
-                //             fieldtype: "Link",
-                //             fieldname: "user",
-                //             options: "User",
-                //             label: "User",
-                //             reqd: 1
-                //         }
-                //     ]
-                // },
-                {
-                    fieldname: "assigned_to",
-                    fieldtype: "Link",
-                    options: "User",
-                    label: "Allocated By",
-					default:frappe.session.user,
-					read_only:1
-                }
-            ],
-            primary_action_label: "Create",
-            primary_action(values) {
+//                 frappe.call({
+//                     method: "meeting_management.meeting_management.doctype.meeting.meeting.create_task_from_dialog",
+//                     args: {
+//                         meeting: frm.doc.name,
+//                         data: values
+//                     },
+//                     callback: function (r) {
+//                         if (!r.exc) {
+//                             frappe.msgprint(__("Task Created Successfully"));
+//                             frm.reload_doc();
+//                             d.hide();
+//                         }
+//                     }
+//                 });
 
-                frappe.call({
-                    method: "meeting_management.meeting_management.doctype.meeting.meeting.create_task_from_dialog",
-                    args: {
-                        meeting: frm.doc.name,
-                        data: values
-                    },
-                    callback: function (r) {
-                        if (!r.exc) {
-                            frappe.msgprint(__("Task Created Successfully"));
-                            frm.reload_doc();
-                            d.hide();
-                        }
-                    }
-                });
+//             }
+//         });
 
-            }
-        });
+//         d.show();
 
-        d.show();
-
-    }, __("Create"));
-}
+//     }, __("Create"));
+// }
 	if (!frm.is_new() && frm.doc.docstatus === 1) {
 		frm.add_custom_button(__("Follow Up"), () => {
 

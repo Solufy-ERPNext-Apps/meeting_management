@@ -120,21 +120,57 @@ class Meeting(Document):
 	# 			})
 	# 	self.save(ignore_permissions=True)
 	def create_agenda(self):
-		tasks_to_add = []
+		parent_task = None
 
 		for row in self.agenda_details:
-			if row.write_agenda and row.has_task:
-				tasks_to_add.append({
+			if row.has_task and row.write_agenda:
+
+				if not parent_task:
+					parent_task = frappe.get_doc({
+						"doctype": "SNM Task",
+						"subject": self.meeting_title or self.name,
+						"meeting": self.name,
+						"is_meeting_task": 1,
+						"is_group": 1,  # or your group task field
+						"user_id": frappe.session.user,
+						"allocated_by": frappe.session.user,
+						"start_date": self.meeting_from,
+						"due_date": self.meeting_to,
+					}).insert(ignore_permissions=True)
+
+				frappe.get_doc({
+					"doctype": "SNM Task",
 					"subject": row.write_agenda,
+					"meeting": self.name,
+					"is_meeting_task": 1,
+					"parent_task": parent_task.name,
 					"user_id": frappe.session.user,
+					"allocated_by": frappe.session.user,
 					"start_date": self.meeting_from,
 					"due_date": self.meeting_to,
-				})
+				}).insert(ignore_permissions=True)
+		# for task_row in self.tasks:
+		# 	task_row.db_set("is_meeting_task", 1, update_modified=False)
+	# def create_agenda(self):
+	# 	if not self.agenda_details:
+	# 		return
+	# 	tasks_to_add = []
 
-		for task in tasks_to_add:
-			self.append("tasks", task)
+	# 	for row in self.agenda_details:
+	# 		if row.write_agenda and row.has_task:
+	# 			tasks_to_add.append({
+	# 				"subject": row.write_agenda,
+	# 				"user_id": frappe.session.user,
+	# 				"start_date": self.meeting_from,
+	# 				"due_date": self.meeting_to,
+	# 				"meeting":self.name,
+	# 				"is_meeting_task":1
+	# 			})
 
-		self.save(ignore_permissions=True)
+	# 	for task in tasks_to_add:
+	# 		self.append("tasks", task)
+
+	# 	self.save(ignore_permissions=True)
 	@frappe.whitelist()
 	def get_user(self):
 		if self.user_type:
@@ -763,6 +799,12 @@ def create_follow_up_meeting(
 def create_task_from_dialog(meeting: str, data: Union[str, Dict[str, Any]]):
 	if isinstance(data, str):
 		data = json.loads(data)
+	assigned_users = data.get("assigned_users") or []
+	if isinstance(assigned_users, str):
+		try:
+			assigned_users = json.loads(assigned_users)
+		except ValueError:
+			assigned_users = [assigned_users]
 
 	# -----------------------------------
 	# FIND PARENT TASK
@@ -803,6 +845,10 @@ def create_task_from_dialog(meeting: str, data: Union[str, Dict[str, Any]]):
 
 	child.meeting = meeting
 	child.parent_task = parent_task
+	for row in assigned_users:
+		user = row.get("user") if isinstance(row, dict) else row
+		if user:
+			child.append("assigned_users", {"user": user})
 
 	child.insert()
 
