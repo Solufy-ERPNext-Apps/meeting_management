@@ -81,6 +81,7 @@ class Meeting(Document):
 	def on_submit(self):	
 		self.create_event()
 		self.create_agenda()
+		self.create_task()
 		user_name = frappe.db.get_value("Employee",{"user_id":frappe.session.user},"employee_name")
 		url = get_url_to_form("Meeting", self.name)
 		if user_name:
@@ -135,18 +136,25 @@ class Meeting(Document):
 
 			task_row = self.get_existing_agenda_task_row(subject)
 			if task_row and task_row.task and frappe.db.exists("SNM Task", task_row.task):
+				self.sync_agenda_task_parent(task_row)
 				continue
 
 			existing_task = self.get_existing_agenda_task(subject)
 			if existing_task:
+				existing_parent_task = frappe.db.get_value("SNM Task", existing_task, "parent_task")
+				if existing_parent_task:
+					self.ensure_agenda_parent_task_row(existing_parent_task)
 				if not task_row:
-					self.append_agenda_task_row(subject, task=existing_task)
+					self.append_agenda_task_row(subject, task=existing_task, parent_task=existing_parent_task)
 				else:
 					task_row.task = existing_task
+					task_row.parent_task = existing_parent_task
+					task_row.is_meeting_task = 1
 				continue
 
 			if not parent_task:
 				parent_task = self.get_or_create_agenda_parent_task()
+				self.ensure_agenda_parent_task_row(parent_task)
 
 			if task_row:
 				task_row.parent_task = parent_task
@@ -154,6 +162,41 @@ class Meeting(Document):
 				continue
 
 			self.append_agenda_task_row(subject, parent_task=parent_task)
+
+	def ensure_agenda_parent_task_row(self, parent_task):
+		if not parent_task:
+			return
+
+		parent_row = self.get_existing_task_row_by_task(parent_task)
+		if parent_row:
+			parent_row.has_sub_task = 1
+			parent_row.is_meeting_task = 1
+			parent_row.meeting = self.name
+			return
+
+		parent = frappe.get_doc("SNM Task", parent_task)
+		self.append("tasks", {
+			"task": parent.name,
+			"task_no": parent.task_no,
+			"subject": parent.subject,
+			"user": parent.allocated_by,
+			"status": parent.status,
+			"priority": parent.priority,
+			"start_date": parent.start_date,
+			"due_date": parent.due_date,
+			"has_sub_task": 1,
+			"meeting": self.name,
+			"description": parent.description,
+			"is_meeting_task": 1
+		})
+
+	def sync_agenda_task_parent(self, task_row):
+		parent_task = frappe.db.get_value("SNM Task", task_row.task, "parent_task")
+		if parent_task:
+			task_row.parent_task = parent_task
+			self.ensure_agenda_parent_task_row(parent_task)
+		task_row.is_meeting_task = 1
+		task_row.meeting = self.name
 
 	def append_agenda_task_row(self, subject, task=None, parent_task=None):
 		self.append("tasks", {
@@ -169,9 +212,16 @@ class Meeting(Document):
 
 	def get_existing_agenda_task_row(self, subject):
 		for row in self.tasks:
+			if row.has_sub_task and row.task and not row.parent_task:
+				continue
 			if self.normalize_task_subject(row.subject) == subject:
 				if row.task and not frappe.db.exists("SNM Task", row.task):
 					row.task = None
+				return row
+
+	def get_existing_task_row_by_task(self, task):
+		for row in self.tasks:
+			if row.task == task:
 				return row
 
 	def get_existing_agenda_task(self, subject):
