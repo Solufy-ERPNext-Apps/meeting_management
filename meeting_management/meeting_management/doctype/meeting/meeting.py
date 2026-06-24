@@ -3,6 +3,8 @@
 
 from __future__ import unicode_literals
 from frappe.query_builder import DocType
+from frappe.model.mapper import get_mapped_doc
+from typing import Any, Dict, Union
 
 import frappe
 from frappe.model.document import Document
@@ -28,6 +30,7 @@ import datetime
 from frappe.utils import get_datetime
 from datetime import timedelta
 class Meeting(Document):
+	
 	def get_recurrence_rrule(self):
 		checked_rows = [row for row in self.recurring_meeting if row.check]
 		if not checked_rows:
@@ -107,16 +110,68 @@ class Meeting(Document):
 			if not target_lead.mobile_no:
 				target_lead.mobile_no = self.mobile_no
 			target_lead.save(ignore_permissions=True)
+	# def create_agenda(self):
+	# 	for row in self.agenda_details:
+	# 		if row.write_agenda and row.has_task:
+	# 			self.append("tasks", {
+	# 				"subject": row.write_agenda,
+	# 				"user_id":frappe.session.user,
+	# 				"start_date":self.meeting_from,
+	# 				"due_date":self.meeting_to,
+					# "is_meetin_task":1
+	# 			})
+	# 	self.save(ignore_permissions=True)
 	def create_agenda(self):
+		parent_task = None
+
 		for row in self.agenda_details:
-			if row.write_agenda and row.has_task:
-				self.append("tasks", {
+			if row.has_task and row.write_agenda:
+
+				if not parent_task:
+					parent_task = frappe.get_doc({
+						"doctype": "SNM Task",
+						"subject": self.meeting_title or self.name,
+						"meeting": self.name,
+						"is_meeting_task": 1,
+						"is_group": 1,  # or your group task field
+						"user_id": frappe.session.user,
+						"allocated_by": frappe.session.user,
+						"start_date": self.meeting_from,
+						"due_date": self.meeting_to,
+					}).insert(ignore_permissions=True)
+
+				frappe.get_doc({
+					"doctype": "SNM Task",
 					"subject": row.write_agenda,
-					"user_id":frappe.session.user,
-					"start_date":self.meeting_from,
-					"due_date":self.meeting_to
-				})
-		self.save(ignore_permissions=True)
+					"meeting": self.name,
+					"is_meeting_task": 1,
+					"parent_task": parent_task.name,
+					"user_id": frappe.session.user,
+					"allocated_by": frappe.session.user,
+					"start_date": self.meeting_from,
+					"due_date": self.meeting_to,
+				}).insert(ignore_permissions=True)
+	
+	# def create_agenda(self):
+	# 	if not self.agenda_details:
+	# 		return
+	# 	tasks_to_add = []
+
+	# 	for row in self.agenda_details:
+	# 		if row.write_agenda and row.has_task:
+	# 			tasks_to_add.append({
+	# 				"subject": row.write_agenda,
+	# 				"user_id": frappe.session.user,
+	# 				"start_date": self.meeting_from,
+	# 				"due_date": self.meeting_to,
+	# 				"meeting":self.name,
+	# 				"is_meeting_task":1
+	# 			})
+
+	# 	for task in tasks_to_add:
+	# 		self.append("tasks", task)
+
+	# 	self.save(ignore_permissions=True)
 	@frappe.whitelist()
 	def get_user(self):
 		if self.user_type:
@@ -246,8 +301,11 @@ class Meeting(Document):
 	# 	# event.custom_contact_person=self.contact_p
 	# 	event.description=self.discussion
 	# 	return event.name
+	
+	
+
 from typing import Any
-@frappe.whitelist()
+
 @frappe.whitelist()
 def get_events(
 	start: str,
@@ -738,40 +796,99 @@ def create_follow_up_meeting(
 	m.insert(ignore_permissions=True ,ignore_mandatory=True)
 	return m.name
 
-
-from frappe.model.mapper import get_mapped_doc
-
 @frappe.whitelist()
-def make_task(source_name, target_doc=None):
-	def postprocess(source, target):
-		# user = frappe.get_doc("User", frappe.session.user)
-		target.meeting = source.name
-		target.allocated_by = frappe.session.user
-		# target.username = user.full_name
-		if hasattr(target, "username"):
-			target.username = frappe.db.get_value(
-				"User",
-				frappe.session.user,
-				"full_name"
-			)
+def create_task_from_dialog(meeting: str, data: Union[str, Dict[str, Any]]):
+	if isinstance(data, str):
+		data = json.loads(data)
+	assigned_users = data.get("assigned_users") or []
+	if isinstance(assigned_users, str):
+		try:
+			assigned_users = json.loads(assigned_users)
+		except ValueError:
+			assigned_users = [assigned_users]
 
-		# Optional field mapping
-		if hasattr(target, "subject"):
-			target.subject = source.meeting_title or source.name
-
-		# if hasattr(target, "description"):
-		# 	target.description = source.discussion or ""
-
-	doc = get_mapped_doc(
-		"Meeting",
-		source_name,
+	# -----------------------------------
+	# FIND PARENT TASK
+	# -----------------------------------
+	parent_task = frappe.db.get_value(
+		"SNM Task",
 		{
-			"Meeting": {
-				"doctype": "SNM Task"
-			}
+			"meeting": meeting,
+			"parent_task": ["is", "not set"]
 		},
-		target_doc,
-		postprocess
+		"name"
 	)
 
-	return doc
+	# -----------------------------------
+	# CREATE PARENT IF NOT EXISTS
+	# -----------------------------------
+	if not parent_task:
+
+		parent = frappe.new_doc("SNM Task")
+		parent.subject = frappe.db.get_value("Meeting", meeting, "meeting_title") or meeting
+		parent.meeting = meeting
+		parent.allocated_by=frappe.session.user
+		parent.is_group = 1
+
+		parent.insert()
+
+		parent_task = parent.name
+
+	# -----------------------------------
+	# CREATE CHILD TASK
+	# -----------------------------------
+	child = frappe.new_doc("SNM Task")
+	child.subject = data.get("subject")
+	child.description = data.get("description")
+	child.due_date = data.get("due_date")
+	child.start_date=data.get("start_date")
+	child.allocated_by = data.get("assigned_to")
+
+	child.meeting = meeting
+	child.parent_task = parent_task
+	for row in assigned_users:
+		user = row.get("user") if isinstance(row, dict) else row
+		if user:
+			child.append("assigned_users", {"user": user})
+
+	child.insert()
+
+	return child.name
+def get_permission_query_conditions(user=None, doctype=None):
+	user = user or frappe.session.user
+
+	if user == "Administrator":
+		return ""
+
+	user = frappe.db.escape(user)
+
+	return f"""
+		(
+			`tabMeeting`.`email_id` = {user}
+			OR `tabMeeting`.`meeting_arranged_by` = {user}
+			OR EXISTS (
+				SELECT 1
+				FROM `tabMeeting Party Representative`
+				WHERE `tabMeeting Party Representative`.`parent` = `tabMeeting`.`name`
+				AND `tabMeeting Party Representative`.`parenttype` = 'Meeting'
+				AND `tabMeeting Party Representative`.`parentfield` = 'meeting_party_representative'
+				AND `tabMeeting Party Representative`.`user` = {user}
+			)
+		)
+	"""
+
+
+def has_permission(doc, user=None, permission_type=None):
+	user = user or frappe.session.user
+
+	if user == "Administrator":
+		return True
+
+	if doc.email_id == user or doc.meeting_arranged_by == user:
+		return True
+
+	for row in doc.get("meeting_party_representative") or []:
+		if row.user == user:
+			return True
+
+	return False

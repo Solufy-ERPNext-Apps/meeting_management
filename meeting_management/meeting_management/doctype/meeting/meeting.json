@@ -144,6 +144,7 @@
    "fieldname": "meeting_arranged_by",
    "fieldtype": "Link",
    "ignore_user_permissions": 1,
+   "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Meeting Arranged By",
    "options": "User",
@@ -375,6 +376,7 @@
   {
    "fieldname": "contact_p",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Chairperson Name",
    "options": "Contact"
   },
@@ -401,6 +403,7 @@
   {
    "fieldname": "meeting_title",
    "fieldtype": "Data",
+   "in_list_view": 1,
    "label": "Meeting Title"
   },
   {
@@ -413,6 +416,7 @@
   {
    "fieldname": "meeting_type",
    "fieldtype": "Select",
+   "in_list_view": 1,
    "label": "Meeting Type",
    "options": "\nInternal\nExternal"
   },
@@ -436,7 +440,7 @@
  "icon": "fa fa-handshake-o",
  "is_submittable": 1,
  "links": [],
- "modified": "2026-06-16 14:58:18.165907",
+ "modified": "2026-06-22 14:07:33.700905",
  "modified_by": "Administrator",
  "module": "Meeting Management",
  "name": "Meeting",

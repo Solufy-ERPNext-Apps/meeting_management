@@ -75,6 +75,13 @@ doctype_js = {
     "Customer":"public/js/customer.js",
     "Opportunity":"public/js/opportunity.js",
 }
+permission_query_conditions = {
+	"Meeting": "meeting_management.meeting_management.doctype.meeting.meeting.get_permission_query_conditions"
+}
+
+has_permission = {
+	"Meeting": "meeting_management.meeting_management.doctype.meeting.meeting.has_permission"
+}
 # doctype_js = {"doctype" : "public/js/doctype.js"}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
@@ -128,13 +135,7 @@ doctype_js = {
 # -----------
 # Permissions evaluated in scripted ways
 
-# permission_query_conditions = {
-#	"Event": "frappe.desk.doctype.event.event.get_permission_query_conditions",
-# }
-#
-# has_permission = {
-#	"Event": "frappe.desk.doctype.event.event.has_permission",
-# }
+
 
 # DocType Class
 # ---------------
@@ -226,9 +227,3 @@ scheduler_events = {
 # auth_hooks = [
 #	"meeting_management.auth.validate"
 # ]
-# from erpnext.selling.doctype.customer import customer_dashboard
-# from meeting_management.api import customer_get_data
-# customer_dashboard.get_data = customer_get_data
-override_whitelisted_methods = {
-    "erpnext.selling.doctype.customer.customer_dashboard.get_data": "meeting_management.api.customer_get_data"
-}
