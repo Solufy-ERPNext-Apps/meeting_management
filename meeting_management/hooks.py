@@ -230,6 +230,3 @@ scheduler_events = {
 # from erpnext.selling.doctype.customer import customer_dashboard
 # from meeting_management.api import customer_get_data
 # customer_dashboard.get_data = customer_get_data
-override_whitelisted_methods = {
-    "erpnext.selling.doctype.customer.customer_dashboard.get_data": "meeting_management.api.customer_get_data"
-}
