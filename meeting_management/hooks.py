@@ -227,3 +227,7 @@ scheduler_events = {
 # auth_hooks = [
 #	"meeting_management.auth.validate"
 # ]
+
+override_whitelisted_methods = {
+    "erpnext.selling.doctype.customer.customer_dashboard.get_data": "meeting_management.api.customer_get_data"
+}
