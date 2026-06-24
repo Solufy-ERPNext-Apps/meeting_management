@@ -394,7 +394,7 @@
   },
   {
    "allow_on_submit": 1,
-   "depends_on": "eval:!(doc.__islocal) && doc.docstatus==1",
+   "depends_on": "eval:!doc.__islocal && doc.docstatus==1 && doc.agenda_details && doc.agenda_details.some(d => d.has_task)",
    "fieldname": "tasks",
    "fieldtype": "Table",
    "label": "Tasks",
@@ -431,6 +431,7 @@
    "options": "Recurring Meeting"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "agenda_details",
    "fieldtype": "Table",
    "label": "Agenda Details",
@@ -440,7 +441,7 @@
  "icon": "fa fa-handshake-o",
  "is_submittable": 1,
  "links": [],
- "modified": "2026-06-22 14:07:33.700905",
+ "modified": "2026-06-24 14:33:11.475070",
  "modified_by": "Administrator",
  "module": "Meeting Management",
  "name": "Meeting",

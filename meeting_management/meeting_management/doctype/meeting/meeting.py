@@ -61,9 +61,10 @@ class Meeting(Document):
 		return f"RRULE:FREQ=WEEKLY;BYDAY={','.join(byday)};UNTIL={until_str}"
 
 	def before_update_after_submit(self):
+		self.create_agenda()
 		self.create_task()
 	def validate(self):
-		self.update_description()
+		# self.update_description()
 		if self.meeting_to and self.meeting_to<self.meeting_from:
 			frappe.throw(_("Meeting To cannot be less than Meeting From"))
 		if self.party_type and self.party:
@@ -122,56 +123,104 @@ class Meeting(Document):
 	# 			})
 	# 	self.save(ignore_permissions=True)
 	def create_agenda(self):
+		if not self.agenda_details:
+			return
+
 		parent_task = None
 
 		for row in self.agenda_details:
-			if row.has_task and row.write_agenda:
+			subject = (row.write_agenda or "").strip()
+			if not row.has_task or not subject:
+				continue
 
-				if not parent_task:
-					parent_task = frappe.get_doc({
-						"doctype": "SNM Task",
-						"subject": self.meeting_title or self.name,
-						"meeting": self.name,
-						"is_meeting_task": 1,
-						"is_group": 1,  # or your group task field
-						"user_id": frappe.session.user,
-						"allocated_by": frappe.session.user,
-						"start_date": self.meeting_from,
-						"due_date": self.meeting_to,
-					}).insert(ignore_permissions=True)
+			task_row = self.get_existing_agenda_task_row(subject)
+			if task_row and task_row.task and frappe.db.exists("SNM Task", task_row.task):
+				continue
 
-				frappe.get_doc({
-					"doctype": "SNM Task",
-					"subject": row.write_agenda,
-					"meeting": self.name,
-					"is_meeting_task": 1,
-					"parent_task": parent_task.name,
-					"user_id": frappe.session.user,
-					"allocated_by": frappe.session.user,
-					"start_date": self.meeting_from,
-					"due_date": self.meeting_to,
-				}).insert(ignore_permissions=True)
-	
-	# def create_agenda(self):
-	# 	if not self.agenda_details:
-	# 		return
-	# 	tasks_to_add = []
+			existing_task = self.get_existing_agenda_task(subject)
+			if existing_task:
+				if not task_row:
+					self.append_agenda_task_row(subject, task=existing_task)
+				else:
+					task_row.task = existing_task
+				continue
 
-	# 	for row in self.agenda_details:
-	# 		if row.write_agenda and row.has_task:
-	# 			tasks_to_add.append({
-	# 				"subject": row.write_agenda,
-	# 				"user_id": frappe.session.user,
-	# 				"start_date": self.meeting_from,
-	# 				"due_date": self.meeting_to,
-	# 				"meeting":self.name,
-	# 				"is_meeting_task":1
-	# 			})
+			if not parent_task:
+				parent_task = self.get_or_create_agenda_parent_task()
 
-	# 	for task in tasks_to_add:
-	# 		self.append("tasks", task)
+			if task_row:
+				task_row.parent_task = parent_task
+				task_row.is_meeting_task = 1
+				continue
 
-	# 	self.save(ignore_permissions=True)
+			self.append_agenda_task_row(subject, parent_task=parent_task)
+
+	def append_agenda_task_row(self, subject, task=None, parent_task=None):
+		self.append("tasks", {
+			"task": task,
+			"subject": subject,
+			"user": frappe.session.user,
+			"start_date": self.meeting_from,
+			"due_date": self.meeting_to,
+			"parent_task": parent_task,
+			"meeting": self.name,
+			"is_meeting_task": 1
+		})
+
+	def get_existing_agenda_task_row(self, subject):
+		for row in self.tasks:
+			if self.normalize_task_subject(row.subject) == subject:
+				if row.task and not frappe.db.exists("SNM Task", row.task):
+					row.task = None
+				return row
+
+	def get_existing_agenda_task(self, subject):
+		tasks = frappe.get_all(
+			"SNM Task",
+			filters={
+				"meeting": self.name,
+				"is_meeting_task": 1,
+				"parent_task": ["is", "set"],
+			},
+			fields=["name", "subject"],
+		)
+
+		for task in tasks:
+			if self.normalize_task_subject(task.subject) == subject:
+				return task.name
+
+	def get_or_create_agenda_parent_task(self):
+		parent_task = frappe.db.get_value(
+			"SNM Task",
+			{
+				"meeting": self.name,
+				"parent_task": ["is", "not set"]
+			},
+			"name"
+		)
+
+		if parent_task:
+			return parent_task
+
+		parent_task = frappe.get_doc({
+			"doctype": "SNM Task",
+			"subject": self.meeting_title or self.name,
+			"meeting": self.name,
+			"is_meeting_task": 1,
+			"is_group": 1,
+			"allocated_by": frappe.session.user,
+			"start_date": self.meeting_from,
+			"due_date": self.meeting_to,
+		}).insert(ignore_permissions=True)
+
+		return parent_task.name
+
+	def normalize_task_subject(self, subject):
+		subject = (subject or "").strip()
+		parts = subject.split(" - ", 1)
+		if parts[0].replace(".", "").isdigit():
+			return parts[1].strip() if len(parts) > 1 else ""
+		return subject
 	@frappe.whitelist()
 	def get_user(self):
 		if self.user_type:
@@ -198,6 +247,7 @@ class Meeting(Document):
 				task.due_date = row.due_date
 				task.meeting = self.name
 				task.description = row.description
+				task.is_meeting_task = row.is_meeting_task
 				if row.has_sub_task:
 					task.is_group = 1
 				if row.parent_task:
@@ -205,15 +255,17 @@ class Meeting(Document):
 				task.department = frappe.db.get_value("Employee",{"user_id":row.user},"department")
 				task.save(ignore_permissions=True)
 				row.task = task.name
+				row.task_no = task.task_no
 	
-	def update_description(self):
-		if not self.tasks:
-			return
-		for row in self.tasks:
-			if not row.task:
-				return
-			# if row.has_value_changed("desctiption"):
-			# 	frappe.db.set_value("SNM Task", row.task, "description", self.description)
+	# def update_description(self):
+	# 	frappe.throw(":::::::::")
+	# 	if not self.tasks:
+	# 		return
+	# 	for row in self.tasks:
+	# 		if not row.task:
+	# 			return
+	# 		if row.has_value_changed("desctiption"):
+	# 			frappe.db.set_value("SNM Task", row.task, "description", self.description)
 	def create_event(self):
 
 		# Create Main Event
