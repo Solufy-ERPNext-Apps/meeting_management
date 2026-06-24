@@ -686,6 +686,7 @@ class SNMTask(Document):
         self.get_task_no()
 
     def after_insert(self):
+        
         self.assign_user()
         self.create_child_tasks()
         self.update_meet()

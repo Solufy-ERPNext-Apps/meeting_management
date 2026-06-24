@@ -11,12 +11,14 @@
  ],
  "fields": [
   {
+   "allow_on_submit": 1,
    "fieldname": "write_agenda",
    "fieldtype": "Small Text",
    "in_list_view": 1,
    "label": "Write Agenda"
   },
   {
+   "allow_on_submit": 1,
    "default": "0",
    "fieldname": "has_task",
    "fieldtype": "Check",
@@ -28,7 +30,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-06-16 14:56:54.726686",
+ "modified": "2026-06-24 14:37:06.378514",
  "modified_by": "Administrator",
  "module": "Meeting Management",
  "name": "Meeting Agenda Details",
