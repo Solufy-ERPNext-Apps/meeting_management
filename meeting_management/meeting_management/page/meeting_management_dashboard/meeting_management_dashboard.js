@@ -14,6 +14,8 @@ class MeetingManagementDashboardPage {
 		this.page = page;
 		this.chartInstances = {};
 		this.autoRefreshMs = 15000;
+		this.recentTaskInitialLimit = 5;
+		this.recentTaskVisibleCount = this.recentTaskInitialLimit;
 		this.inject_styles();
 		this.render();
 		this.bind_actions();
@@ -280,6 +282,22 @@ class MeetingManagementDashboardPage {
 					margin-bottom: 0;
 				}
 
+				.meeting-management-dashboard .mm-table-footer {
+					display: flex;
+					justify-content: space-between;
+					align-items: center;
+					gap: 12px;
+					margin-top: 12px;
+					color: var(--mm-muted);
+					font-size: 12px;
+				}
+
+				.meeting-management-dashboard .mm-show-more {
+					border-radius: 10px;
+					padding: 6px 12px;
+					min-height: 32px;
+				}
+
 				.meeting-management-dashboard .mm-table-wrap thead th {
 					background: #f5eee3;
 					color: var(--mm-muted);
@@ -528,6 +546,7 @@ class MeetingManagementDashboardPage {
 		this.render_summary(this.build_summary_cards(data));
 
 		if (!isAutoRefresh) {
+			this.recentTaskVisibleCount = this.recentTaskInitialLimit;
 			this.render_charts(data, filters);
 			this.render_tables(data, filters);
 		}
@@ -692,6 +711,9 @@ class MeetingManagementDashboardPage {
 		if (!filteredTasks.length) {
 			this.$tasksTable.html(`<div class="mm-empty">${__("No matching tasks found.")}</div>`);
 		} else {
+			const visibleTasks = filteredTasks.slice(0, this.recentTaskVisibleCount);
+			const hasMoreTasks = filteredTasks.length > visibleTasks.length;
+
 			this.$tasksTable.html(`
 				<div class="mm-table-wrap">
 					<table class="table table-hover">
@@ -704,7 +726,7 @@ class MeetingManagementDashboardPage {
 							</tr>
 						</thead>
 						<tbody>
-							${filteredTasks.map((t) => {
+							${visibleTasks.map((t) => {
 								const statusClass = `status-${(t.status || '').toLowerCase()}`;
 								const formattedDate = t.due_date ? frappe.datetime.str_to_user(t.due_date) : '-';
 								return `
@@ -719,11 +741,20 @@ class MeetingManagementDashboardPage {
 						</tbody>
 					</table>
 				</div>
+				<div class="mm-table-footer">
+					<span>${__("Showing {0} of {1}", [visibleTasks.length, filteredTasks.length])}</span>
+					${hasMoreTasks ? `<button class="btn btn-default mm-show-more">${__("Show More")}</button>` : ""}
+				</div>
 			`);
 
 			this.$tasksTable.find(".mm-row-link").on("click", (event) => {
 				const $row = $(event.currentTarget);
 				frappe.set_route("Form", $row.data("doctype"), $row.data("name"));
+			});
+
+			this.$tasksTable.find(".mm-show-more").on("click", () => {
+				this.recentTaskVisibleCount += this.recentTaskInitialLimit;
+				this.render_tables(this.currentData || data, filters || {});
 			});
 		}
 
