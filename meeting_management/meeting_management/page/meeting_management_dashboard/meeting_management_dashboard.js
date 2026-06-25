@@ -31,20 +31,22 @@ class MeetingManagementDashboardPage {
 				.meeting-management-dashboard {
 					--mm-bg: #f4f1e8;
 					--mm-card: #fffdf8;
-					--mm-border: rgba(41,52,67,.10);
+					--mm-border: rgba(41,52,67,.18);
+					--mm-border-strong: rgba(41,52,67,.26);
 					--mm-ink: #202935;
 					--mm-muted: #65707f;
 					--mm-primary: #215f86;
 					--mm-accent: #cc8840;
 					--mm-soft: #e6edf3;
 					--mm-warm: #f8e7d0;
-					padding: 8px 0 20px;
+					padding: 16px 24px 24px 24px;
+					font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 				}
 
 				.meeting-management-dashboard .mm-hero,
 				.meeting-management-dashboard .mm-card {
 					background: var(--mm-card);
-					border: 1px solid var(--mm-border);
+					border: 1px solid var(--mm-border-strong);
 					border-radius: 22px;
 					box-shadow: 0 14px 34px rgba(32,41,53,.06);
 					position: relative;
@@ -87,7 +89,8 @@ class MeetingManagementDashboardPage {
 
 				.meeting-management-dashboard .mm-hero {
 					overflow: visible !important;
-					padding: 16px 18px 14px;
+					padding: 24px 28px;
+					margin-bottom: 24px;
 					background: radial-gradient(circle at top right, rgba(204,136,64,.20), transparent 24%),
 						linear-gradient(135deg, #fffdf8 0%, #f0ebe0 55%, #eaf1f6 100%);
 				}
@@ -117,9 +120,9 @@ class MeetingManagementDashboardPage {
 
 				.meeting-management-dashboard .mm-toolbar {
 					display: flex;
-					gap: 8px;
+					gap: 16px;
 					flex-wrap: wrap;
-					margin-top: 12px;
+					margin-top: 16px;
 				}
 
 				.meeting-management-dashboard .mm-toolbar .btn {
@@ -159,8 +162,8 @@ class MeetingManagementDashboardPage {
 				.meeting-management-dashboard .mm-summary {
 					display: grid;
 					grid-template-columns: repeat(6, minmax(0, 1fr));
-					gap: 12px;
-					margin-top: 18px;
+					gap: 24px;
+					margin-bottom: 36px;
 				}
 
 				.meeting-management-dashboard .mm-stat {
@@ -169,6 +172,7 @@ class MeetingManagementDashboardPage {
 					min-height: 112px;
 					position: relative;
 					overflow: hidden;
+					border: 1px solid rgba(255,255,255,.38);
 					transform-origin: center;
 					animation: mm-stat-breathe 9s ease-in-out infinite;
 				}
@@ -234,12 +238,12 @@ class MeetingManagementDashboardPage {
 				.meeting-management-dashboard .mm-grid {
 					display: grid;
 					grid-template-columns: repeat(2, minmax(0, 1fr));
-					gap: 16px;
-					margin-top: 16px;
+					gap: 24px;
+					margin-bottom: 24px;
 				}
 
 				.meeting-management-dashboard .mm-card {
-					padding: 18px;
+					padding: 20px;
 				}
 
 				.meeting-management-dashboard .mm-card-head {
@@ -247,7 +251,9 @@ class MeetingManagementDashboardPage {
 					justify-content: space-between;
 					gap: 12px;
 					align-items: flex-start;
-					margin-bottom: 14px;
+					margin-bottom: 20px;
+					padding-bottom: 12px;
+					border-bottom: 1px solid var(--mm-border);
 				}
 
 				.meeting-management-dashboard .mm-card-title {
@@ -268,12 +274,12 @@ class MeetingManagementDashboardPage {
 				.meeting-management-dashboard .mm-bottom {
 					display: grid;
 					grid-template-columns: 1fr 1.15fr;
-					gap: 16px;
-					margin-top: 16px;
+					gap: 24px;
+					margin-bottom: 24px;
 				}
 
 				.meeting-management-dashboard .mm-table-wrap {
-					border: 1px solid var(--mm-border);
+					border: 1px solid var(--mm-border-strong);
 					border-radius: 16px;
 					overflow: auto;
 				}
@@ -354,7 +360,8 @@ class MeetingManagementDashboardPage {
 
 				[data-theme="dark"] .meeting-management-dashboard {
 					--mm-card: #171d22;
-					--mm-border: rgba(208,185,150,.12);
+					--mm-border: rgba(208,185,150,.16);
+					--mm-border-strong: rgba(208,185,150,.26);
 					--mm-ink: #f5eee3;
 					--mm-muted: #b7ab97;
 					--mm-primary: #4c8fba;
